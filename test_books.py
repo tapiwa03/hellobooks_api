@@ -13,9 +13,9 @@ class BooksTestsCase(unittest.TestCase):
     #Set up methods for test cases
     def setUp(self):
     	#Initialize test variables
-    	self.app = create_app("testing")
-    	self.client = self.app.test_client
-    	self.book_data = {
+        self.app = create_app("testing")
+        self.client = self.app.test_client
+        self.book_data = {
     	   	'book_id':'1',
     	   	'title':'War and Peace',
     	   	'author': 'Leo Tolstoy',
@@ -23,7 +23,9 @@ class BooksTestsCase(unittest.TestCase):
     	   	'genre':'fiction',
     	   	'description':'This is a description about the book war and peace by leo tolstoy'
     	}
-    	self.app_context = self.app.app_context.push()
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+
 
 
     def test_book_add(self):
