@@ -3,7 +3,7 @@ import unittest
 import os
 
 # import JSON
-from flask import json
+import json
 
 from app import create_app
 
@@ -73,7 +73,7 @@ class BooksTestsCase(unittest.TestCase):
     	#test api can delete a single book by id
     	post_result = self.client().post('/api/books', data=self.book_data)
     	self.assertEqual(post_result.status_code, 201)
-    	delete_result = self.client().delete('/api/books/1')
+    	delete_result = self.client().list_of_books.remove('/api/books/1')
     	self.assertEqual(delete_result.status_code, 200)
     	result = self.client().get('/api/books/1')
     	self.assertEqual(result.status_code, 404)

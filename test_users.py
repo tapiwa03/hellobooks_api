@@ -16,9 +16,8 @@ class UsersTestsCase(unittest.TestCase):
         self.app = create_app("testing")
         self.client = self.app.test_client
         self.user_data = {
-    	   	'name':'John',
     	   	'email': 'john@mail.com',
-    	   	'password': 'John2018',
+    	   	'password': 'John2018'
     	}
         self.app_context = self.app.app_context()
         self.app_context.push()
