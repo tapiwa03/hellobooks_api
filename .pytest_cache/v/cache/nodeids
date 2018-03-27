@@ -1,5 +1,6 @@
 [
   "test_auth.py::TestAuth::test_registration",
   "test_auth.py::TestAuth::test_user_login",
-  "test_auth.py::TestAuth::test_user_logout"
+  "test_auth.py::TestAuth::test_user_logout",
+  "test_auth.py::TestAuth::test_user_password_reset"
 ]

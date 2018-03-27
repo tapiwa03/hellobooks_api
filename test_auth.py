@@ -57,8 +57,18 @@ class TestAuth(unittest.TestCase):
         access_token = token['access_token']
         res = self.app.post('api/v1/auth/logout',
                             headers={'Authorization': 'Bearer {}'.format(access_token)})
-        self.assertEqual(res.data , 200)
+        self.assertEqual(res.status_code , 200)
         self.assertIn(b"You are now logged out", res.data)
+
+
+    def test_user_password_reset(self):
+        #test api allows user to reset their password /api/auth/reset-password
+        self.test_user_login()
+        reset_result = self.app.post('api/v1/auth/reset-password', data=json.dumps({
+            'email':'john@mail.com',
+            'new_password':'Change123'
+        }))
+        self.assertEqual(reset_result.status_code, 201)
 
 
     def tearDown(self):
@@ -70,39 +80,4 @@ class TestAuth(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()  
-   
-
-""""
-    
-
-
-
-        registration = self.register_user(self.user)
-        self.assertEqual(registration.status_code, 201)
-        login = self.login_user(self.user)
-        self.assertEqual(login.status_code, 200)
-        login_msg = json.loads(login.data)
-        access_token = login_msg['access_token']
-        logout = self.client.post('/api/auth/logout',
-                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
-        logout_msg = json.loads(logout.data)
-        self.assertEqual(logout.status_code, 200)
-        self.assertEqual(logout_msg['message'], 'successfully logged out')
-
-
-
-    def test_user_password_reset(self):
-        #test api allows user to reset their password /api/auth/reset-password
-        self.test_user_login()
-        reset_result = self.client().post('api/v1/auth/reset-password', data={
-            'email':'john@mail.com',
-            'old_password':'John2018',
-            'new_password':'Change123'
-        })
-        login_result = self.client().post('/auth/login', data={
-            'email':'john@mail.com',
-            'password':'Change123'
-        })
-        self.assertEqual(login_result.status_code, 200)
-"""
 
