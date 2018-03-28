@@ -5,13 +5,12 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
-from hello_books.api.auth_views import register
+
 
 class TestAuth(unittest.TestCase): 
     def setUp(self):
         # creates a test client
         self.app = app.test_client()
-        #self.jwt = JWTManager(app)
         # propagate the exceptions to the test client
         self.app.testing = True 
         #Initialize test variables

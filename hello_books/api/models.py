@@ -13,6 +13,9 @@ class HelloBooks(object):
     self.users_counter = 0
     self.users_list = []
 
+    #list to holld all books
+    self.books_list = []
+
   #base methods, will be used multiple times
   def check_email_exists(self, search_email):
     for find_email in self.users_list:
@@ -31,11 +34,17 @@ class HelloBooks(object):
 
     #End of base methods
 
+
+
+  """
+  Code for user methods that are imported into auth_views.py
+  """
   def user_registration(self, data):
     data['password'] =generate_password_hash(data['password'])
     self.users_list.append(data)
     return jsonify({'message':'Registered Successfully'})
-    
+  
+
   def user_login(self, data):
     if not self.check_email_exists(data['email']):
       return jsonify({'message' : 'Email does not exist'})
@@ -51,6 +60,18 @@ class HelloBooks(object):
 
   def view_users(self):
     return jsonify(self.users_list)
+
+
+
+  """
+  Code for user methods that are imported into auth_views.py
+  """
+  def add_book(self,data):
+    self.books_list.append(data)
+    return jsonify({'message' : 'Book Added'})
+
+
+
 
 
 
