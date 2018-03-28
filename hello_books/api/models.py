@@ -70,6 +70,9 @@ class HelloBooks(object):
     self.books_list.append(data)
     return jsonify({'message' : 'Book Added'})
 
+  def view_books(self):
+    return jsonify(self.books_list)
+
 
 
 

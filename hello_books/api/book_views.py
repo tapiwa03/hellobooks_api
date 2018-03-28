@@ -1,5 +1,5 @@
 
-from flask import jsonify, Blueprint, request, Flask
+from flask import jsonify, Blueprint, request, Flask, abort, make_response, session
 from flask.views import MethodView
 from hello_books import app
 from hello_books.api.models import HelloBooks
@@ -31,15 +31,19 @@ def edit_book():
 def delete_book():
     pass
 
-@app.route('/api/v1/books/', methods=['GET'])
+@app.route('/api/v1/books', methods=['GET'])
 def get_all_books():
-    pass
+  return initHelloBooks.view_books(), 200
 
 @app.route('/api/v1/books/<int:id>', methods=['GET'])
-def get_book_by_id():
-    pass
+def get_by_id(id):
+  book = [book for book in initHelloBooks.books_list if book['book_id'] == id]
+  if len(book) == 0:
+    abort(404)
+  return jsonify({'book': book[0]}), 200
+
 
 #check if users is correct
-@app.route('/api/v1/users/books/', methods=['GET'])
+@app.route('/api/v1/users/books', methods=['GET'])
 def borrow_book():
-    pass
+  pass
