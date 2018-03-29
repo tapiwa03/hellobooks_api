@@ -1,13 +1,12 @@
 #import flask
-from flask import Flask
-
+from flask_api import FlaskAPI
 #import JWT web tokens
 from flask_jwt_extended import (
   JWTManager
   )
 
 #instantiate flask 
-app = Flask(__name__)
+app = FlaskAPI(__name__)
 
 #setup jwt for token encryption
 app.config['JWT_SECRET_KEY'] = 'Some-Key'

@@ -3,6 +3,5 @@
   "test_book.py::TestAuth::test_user_password_reset": true,
   "test_books.py::TestAuth::test_user_password_reset": true,
   "test_books.py::TestBooks::test_book_delete": true,
-  "test_books.py::TestBooks::test_book_edit": true,
-  "test_books.py::TestBooks::test_book_get_by_id": true
+  "test_books.py::TestBooks::test_book_edit": true
 }

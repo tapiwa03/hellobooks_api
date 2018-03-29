@@ -48,7 +48,7 @@ class HelloBooks(object):
   def user_login(self, data):
     if not self.check_email_exists(data['email']):
       return jsonify({'message' : 'Email does not exist'})
-
+      
     #check if password matches
     get_email_for_login = self.check_email_for_login(data['email'])
     if check_password_hash(get_email_for_login['password'], data['password']):
@@ -72,9 +72,5 @@ class HelloBooks(object):
 
   def view_books(self):
     return jsonify(self.books_list)
-
-
-
-
 
 

@@ -2,12 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache
 
 # C extensions
 *.so
 
 # Distribution / packaging
 .Python
+__pycache__
 venv/
 build/
 develop-eggs/
@@ -16,8 +18,10 @@ downloads/
 eggs/
 .eggs/
 lib/
+.vscode
 lib64/
 parts/
+.pytest_cache
 sdist/
 var/
 wheels/

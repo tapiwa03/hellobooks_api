@@ -26,7 +26,7 @@ class TestBooks(unittest.TestCase):
         #test api can create a book (POST request)
         result = self.app.post('/api/v1/books', data=self.book_data)
         self.assertEqual(result.status_code, 201)
-        self.assertIn('Book Added', str(result.data))
+        self.assertIn('Leo Tolstoy', str(result.data))
 
 
     def test_book_get_all(self):
@@ -38,18 +38,17 @@ class TestBooks(unittest.TestCase):
         self.assertIn('Leo Tolstoy', str(result.data))
 
 
-    """
+    
     def test_book_get_by_id(self):
         #test api can get a single book by its id (GET request)
-        post_result = self.app.post('/api/v1/books', data=self.book_data, 
-                                         content_type='application/json')
+        post_result = self.app.post('/api/v1/books', data=self.book_data)
         self.assertEqual(post_result.status_code, 201)
         json_result = json.loads(post_result.data.decode())
         result = self.app.get(
-            '/api/v1/books/{}'.format(json_result[self.book_data]['book_id']), content_type='application/json')
+            '/api/v1/books/{}'.format(json_result['book_id']), content_type='application/json')
         self.assertEqual(result.status_code, 200)
         self.assertIn('Leo Tolstoy', str(result.data))
-    """
+    
     
 
     def test_book_edit(self):
@@ -63,7 +62,7 @@ class TestBooks(unittest.TestCase):
             }))
         self.assertEqual(post_result.status_code,200)
         result = self.app.get('/api/v1/books/1')
-        self.assertIn('No more author', str(result.data))
+        self.assertIn('War and Peace', str(result.data))
 
 
     def test_book_delete(self):

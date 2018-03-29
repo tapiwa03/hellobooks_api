@@ -6,5 +6,6 @@
   "test_books.py::TestBooks::test_book_add",
   "test_books.py::TestBooks::test_book_delete",
   "test_books.py::TestBooks::test_book_edit",
-  "test_books.py::TestBooks::test_book_get_all"
+  "test_books.py::TestBooks::test_book_get_all",
+  "test_books.py::TestBooks::test_book_get_by_id"
 ]
