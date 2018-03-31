@@ -10,6 +10,39 @@ books = Blueprint('books', __name__)
 hello_books = HelloBooks()
 
 
+@app.route('/api/v1/books/<int:id>', methods=['PUT'])
+def edit_book():
+    book = [book for book in hello_books.books_list if book['book_id'] == id]
+    # checking if the input is in the right format
+    if len(book) == 0:
+        return jsonify({'message': "Book Doesnt Exist"})
+    if not request.json:
+        abort(400)
+    if 'title' in request.json:
+        book[0]['title'] = request.json['title']
+    if 'author' in request.json:
+        book[0]['author'] = request.json['author']
+    if 'pdate' in request.json:
+        book[0]['pdate'] = request.json['pdate']
+    if 'pages' in request.json:
+        book[0]['pages'] = request.json['pages']
+    if 'summary' in request.json:
+        book[0]['summary'] = request.json['summary']
+    if 'image' in request.json:
+        book[0]['image'] = request.json['image']
+    if 'audio' in request.json:
+        book[0]['audio'] = request.json['audio']
+
+    return jsonify({'book': book[0]})
+
+
+# check if users is correct
+@app.route('/api/v1/users/books', methods=['GET'])
+def borrow_book():
+    pass
+
+
+
 @app.route('/api/v1/books', methods=['POST'])
 def add_book():
     sent_data = request.get_json(force=True)
@@ -24,7 +57,7 @@ def add_book():
     hello_books.add_book(data)
 
     response = jsonify({
-        'book_id': data['book_id'],
+                'book_id': data['book_id'],
         'title': data['title'],
         'author': data['author'],
         'date_published': data['date_published'],
@@ -35,14 +68,13 @@ def add_book():
     return response
 
 
-@app.route('/api/v1/books/<int:id>', methods=['PUT'])
-def edit_book():
-    pass
-
-
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])
-def delete_book():
-    pass
+def delete_book(id):
+    book = [book for book in hello_books.books_list if book['book_id'] == id]
+    if len(book) == 0:
+        return jsonify({'message': "Book Doesnt Exist"})
+    hello_books.books_list.remove(book[0])
+    return jsonify({'message': "Book Was Deleted"})
 
 
 @app.route('/api/v1/books', methods=['GET'])
@@ -58,7 +90,3 @@ def get_by_id(id):
     return jsonify({'book': book[0]}), 200
 
 
-# check if users is correct
-@app.route('/api/v1/users/books', methods=['GET'])
-def borrow_book():
-    pass

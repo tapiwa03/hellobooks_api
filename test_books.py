@@ -55,14 +55,13 @@ class TestBooks(unittest.TestCase):
         #test api can edit a book (PUT request)
         post_result = self.app.post('/api/v1/books', data=self.book_data)
         self.assertEqual(post_result.status_code, 201)
+        self.book_data['title'] = 'The New Name'
         post_result = self.app.put(
             'api/v1/books/1',
-            data=json.dumps({
-                "author": "No more author"
-            }))
+            data=json.dumps(self.book_data))
         self.assertEqual(post_result.status_code,200)
         result = self.app.get('/api/v1/books/1')
-        self.assertIn('War and Peace', str(result.data))
+        self.assertIn('The New Name', str(result.data))
 
 
     def test_book_delete(self):
@@ -72,7 +71,7 @@ class TestBooks(unittest.TestCase):
         delete_result = self.app.delete('/api/v1/books/1')
         self.assertEqual(delete_result.status_code, 200)
         result = self.app.get('/api/v1/books/1')
-        self.assertEqual(result.status_code, 404)
+        self.assertIn(b'Book Doesnt Exist', result.data)
 
 
     def tearDown(self):

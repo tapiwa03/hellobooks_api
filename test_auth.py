@@ -19,7 +19,11 @@ class TestAuth(unittest.TestCase):
             'email': 'john@mail.com',
             'password': 'John2018'
         })
-        
+        self.user_data2 = json.dumps({
+            'name': 'Password',
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
+        })
 
 
     def test_registration(self):
@@ -55,20 +59,36 @@ class TestAuth(unittest.TestCase):
         token = json.loads(result.data)
         access_token = token['access_token']
         res = self.app.post('api/v1/auth/logout',
-                            headers={'Authorization': 'Bearer {}'.format(access_token)})
+                            headers={'Authorization': 'Bearer {}'.format(access_token)},
+                            content_type='application/json')
         self.assertEqual(res.status_code , 200)
         self.assertIn(b"You are now logged out", res.data)
 
 
-    def test_user_password_reset(self):
-        #test api allows user to reset their password /api/auth/reset-password
-        self.test_user_login()
-        reset_result = self.app.post('api/v1/auth/reset-password', data=json.dumps({
-            'email':'john@mail.com',
-            'new_password':'Change123'
+    def test_change_user_password(self):
+        #Test to register new user
+        result = self.app.post('/api/v1/auth/register', data=self.user_data2)
+        # assert the status code of the response
+        self.assertEqual(result.status_code, 201)
+        #login the registered user
+        login = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
         }))
-        self.assertEqual(reset_result.status_code, 201)
-
+        self.assertEqual(login.status_code, 200)
+        #retrieve data from the login response
+        login_msg = json.loads(login.data)
+        access_token = login_msg['access_token']
+        #set variable for the new password
+        new_password = {"new_pword": "PasswordNew"}
+        #do a post of the new password to see if it changes
+        change = self.app.post('/api/v1/auth/change-password',
+                                data=json.dumps(new_password),
+                                headers={'Authorization': 'Bearer {}'.format(access_token)},
+                                content_type='application/json')
+        self.assertEqual(change.status_code, 201)
+        change_msg = json.loads(change.data)
+        self.assertEqual(change_msg['message'], 'Password has been changed')
 
     def tearDown(self):
         #Teardown Initialized variables
