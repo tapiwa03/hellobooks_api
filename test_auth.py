@@ -90,6 +90,21 @@ class TestAuth(unittest.TestCase):
         change_msg = json.loads(change.data)
         self.assertEqual(change_msg['message'], 'Password has been changed')
 
+
+    def test_reset_password(self):
+        #register user first
+        result = self.app.post('/api/v1/auth/register', data=self.user_data)
+        # assert the status code of the response
+        self.assertEqual(result.status_code, 201)
+        #assert that registration message shows
+        self.assertIn(result.data,  b'{\n  "message": "Registered Successfully"\n}\n')
+
+        #reset the password
+        reset = self.app.post('/api/v1/auth/reset-password', data=json.dumps({
+                                'email' : 'jane@mail.com'
+                                }))
+        self.assertEqual(reset.status_code, 201)
+        self.assertIn(b'Password reset to Pass123', reset.data)
   
 
     def tearDown(self):
