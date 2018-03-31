@@ -10,6 +10,12 @@ books = Blueprint('books', __name__)
 hello_books = HelloBooks()
 
 
+# check if users is correct
+@app.route('/api/v1/users/books', methods=['GET'])
+def borrow_book():
+    pass
+
+
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
 def edit_book(id):
     book = [book for book in hello_books.books_list if book['book_id'] == id]
@@ -32,12 +38,6 @@ def edit_book(id):
     return jsonify({'book': book[0]})
 
 
-# check if users is correct
-@app.route('/api/v1/users/books', methods=['GET'])
-def borrow_book():
-    pass
-
-
 
 @app.route('/api/v1/books', methods=['POST'])
 def add_book():
@@ -48,17 +48,19 @@ def add_book():
         'author': sent_data.get('author'),
         'date_published': sent_data.get('date_published'),
         'genre': sent_data.get('genre'),
-        'description': sent_data.get('description')
+        'description': sent_data.get('description'),
+        'available': True
     }
     hello_books.add_book(data)
 
     response = jsonify({
-                'book_id': data['book_id'],
+        'book_id': data['book_id'],
         'title': data['title'],
         'author': data['author'],
         'date_published': data['date_published'],
         'genre': data['genre'],
-        'description': data['description']
+        'description': data['description'],
+        'available': True
     })
     response.status_code = 201
     return response

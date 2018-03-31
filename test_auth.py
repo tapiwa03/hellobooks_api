@@ -102,9 +102,10 @@ class TestAuth(unittest.TestCase):
         #reset the password
         reset = self.app.post('/api/v1/auth/reset-password', data=json.dumps({
                                 'email' : 'jane@mail.com'
-                                }))
+                                }),
+                              content_type='application/json')
         self.assertEqual(reset.status_code, 201)
-        self.assertIn(b'Password reset to Pass123', reset.data)
+        self.assertIn(b'Password has been changed to Pass123', reset.data)
   
 
     def tearDown(self):

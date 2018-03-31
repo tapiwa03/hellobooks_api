@@ -1,6 +1,7 @@
 [
   "test_auth.py::TestAuth::test_change_user_password",
   "test_auth.py::TestAuth::test_registration",
+  "test_auth.py::TestAuth::test_reset_password",
   "test_auth.py::TestAuth::test_user_login",
   "test_auth.py::TestAuth::test_user_logout",
   "test_books.py::TestBooks::test_book_add",

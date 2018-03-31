@@ -28,6 +28,18 @@ auth = Blueprint('auth', __name__)
 hello_books = HelloBooks()
 
 
+@app.route('/api/v1/auth/reset-password', methods=['POST'])
+def reset_password():
+    email = request.json.get('email')
+    # if user email does exist
+    for user in hello_books.users_list:
+        if email == user['email']:
+            user['password'] = generate_password_hash("Pass123")
+            return jsonify({
+                'message': "Password has been changed to Pass123. Please login and change it."
+                }), 201
+        # if user email does not exist
+    return jsonify({'message': 'Unable to reset password.'})
 
 @app.route('/api/v1/auth/register', methods=['POST'])
 def register():
