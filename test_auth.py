@@ -58,7 +58,7 @@ class TestAuth(unittest.TestCase):
         #follow redirect to logout and message displayed
         token = json.loads(result.data)
         access_token = token['access_token']
-        res = self.app.post('api/v1/auth/logout',
+        res = self.app.delete('api/v1/auth/logout',
                             headers={'Authorization': 'Bearer {}'.format(access_token)},
                             content_type='application/json')
         self.assertEqual(res.status_code , 200)
@@ -89,6 +89,8 @@ class TestAuth(unittest.TestCase):
         self.assertEqual(change.status_code, 201)
         change_msg = json.loads(change.data)
         self.assertEqual(change_msg['message'], 'Password has been changed')
+
+  
 
     def tearDown(self):
         #Teardown Initialized variables

@@ -11,7 +11,7 @@ hello_books = HelloBooks()
 
 
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
-def edit_book():
+def edit_book(id):
     book = [book for book in hello_books.books_list if book['book_id'] == id]
     # checking if the input is in the right format
     if len(book) == 0:
@@ -22,16 +22,12 @@ def edit_book():
         book[0]['title'] = request.json['title']
     if 'author' in request.json:
         book[0]['author'] = request.json['author']
-    if 'pdate' in request.json:
-        book[0]['pdate'] = request.json['pdate']
-    if 'pages' in request.json:
-        book[0]['pages'] = request.json['pages']
-    if 'summary' in request.json:
-        book[0]['summary'] = request.json['summary']
-    if 'image' in request.json:
-        book[0]['image'] = request.json['image']
-    if 'audio' in request.json:
-        book[0]['audio'] = request.json['audio']
+    if 'date_published' in request.json:
+        book[0]['date_published'] = request.json['date_published']
+    if 'genre' in request.json:
+        book[0]['genre'] = request.json['genre']
+    if 'description' in request.json:
+        book[0]['description'] = request.json['description']
 
     return jsonify({'book': book[0]})
 
