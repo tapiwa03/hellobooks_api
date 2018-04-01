@@ -3,17 +3,30 @@ from flask_api import FlaskAPI
 from flask.views import MethodView
 from hello_books import app
 from hello_books.api.models import HelloBooks
+from flask_jwt_extended import (
+    JWTManager, jwt_required, get_jwt_identity,
+    create_access_token, get_raw_jwt
+)
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
+blacklist = set()
+
+
+jwt = JWTManager(app)
+#check if jwt token is in blacklist
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    return jti in blacklist
+
 
 # instantiate blueprint and assign to var books
 books = Blueprint('books', __name__)
 
 hello_books = HelloBooks()
-
-
-# check if users is correct
-@app.route('/api/v1/users/books', methods=['GET'])
-def borrow_book():
-    pass
 
 
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
@@ -35,7 +48,10 @@ def edit_book(id):
     if 'description' in request.json:
         book[0]['description'] = request.json['description']
 
-    return jsonify({'book': book[0]})
+    if hello_books.add_book_validation(book[0]) == True:
+        return jsonify({'book': book[0]})
+    else:
+        return jsonify({"message": "Please ensure correct entry of data"})
 
 
 
@@ -51,19 +67,23 @@ def add_book():
         'description': sent_data.get('description'),
         'available': True
     }
-    hello_books.add_book(data)
+    if HelloBooks().add_book_validation(data) == True:
+        hello_books.add_book(data)
+        response = jsonify({
+            'book_id': data['book_id'],
+            'title': data['title'],
+            'author': data['author'],
+            'date_published': data['date_published'],
+            'genre': data['genre'],
+            'description': data['description'],
+            'available': True
+        })
+        response.status_code = 201
+        return response
+    else:
+        return jsonify({"message": "Please enter correct book details"})
 
-    response = jsonify({
-        'book_id': data['book_id'],
-        'title': data['title'],
-        'author': data['author'],
-        'date_published': data['date_published'],
-        'genre': data['genre'],
-        'description': data['description'],
-        'available': True
-    })
-    response.status_code = 201
-    return response
+    
 
 
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])
@@ -87,4 +107,6 @@ def get_by_id(id):
         return jsonify({'message': "Book Doesnt Exist"})
     return jsonify({'book': book[0]}), 200
 
+
+    
 

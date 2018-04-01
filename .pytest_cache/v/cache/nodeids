@@ -1,4 +1,5 @@
 [
+  "test_auth.py::TestAuth::test_borrow_book",
   "test_auth.py::TestAuth::test_change_user_password",
   "test_auth.py::TestAuth::test_registration",
   "test_auth.py::TestAuth::test_reset_password",

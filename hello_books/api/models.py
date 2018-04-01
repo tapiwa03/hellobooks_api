@@ -17,9 +17,13 @@ class HelloBooks(object):
     #list to holld all books
     self.books_list = []
 
-    """
-    HELPER METHODS FOR USER VIEWS
-    """
+    #list of borrowed books
+    self.borrow_details = []
+
+
+  """
+  HELPER METHODS FOR USER VIEWS
+  """
 
   #check for email existence
   def check_email_exists(self, search_email):
@@ -55,12 +59,9 @@ class HelloBooks(object):
     return v.validate(dict_data)
 
 
-
-
-
-    #End of base methods
-
-
+  """
+  END OF USER HELPER METHODS
+  """
 
   """
   Code for user methods that are imported into auth_views.py
@@ -86,17 +87,49 @@ class HelloBooks(object):
 
   def view_users(self):
     return jsonify(self.users_list)
-
+  """
+  END OF AUTH CODE
+  """
 
 
   """
-  Code for user methods that are imported into auth_views.py
-  """
+  CODE FOR BOOKS
+  """  
+
   def add_book(self,data):
     self.books_list.append(data)
     return jsonify({'message' : 'Book Added'})
 
+
   def view_books(self):
     return jsonify(self.books_list)
+
+
+  def borrow_book(self, data):
+    self.borrow_details.append(data)
+    response = jsonify({'message': "You have borrowed this book"})
+    return response
+
+  
+
+  """
+  VALIDATION FOR BOOK DATA
+  """
+
+
+  def add_book_validation(self, dict_data):
+    schema = {
+        'title': {'type': 'string', 'required': True, 'empty': False, 'maxlength': 25, 'minlength': 4},
+        'author': {'type': 'string', 'required': True, 'empty': False, 'maxlength': 25, 'minlength': 4},
+        'genre': {'type': 'string', 'required': True, 'empty': False, 'maxlength': 10, 'minlength': 4},
+        'description': {'type': 'string', 'required': False, 'maxlength': 200, 'minlength': 4},
+    }
+    v = Validator(schema)
+    v.allow_unknown = True
+    return v.validate(dict_data)
+
+  """
+  END OF BOOK CODE
+  """
 
 

@@ -8,7 +8,7 @@ from flask_jwt_extended import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from hello_books import app
 from hello_books.api.models import HelloBooks
-
+import datetime
 #set blacklist for tokens which cannot be used again
 blacklist = set()
 
@@ -103,6 +103,38 @@ def change_password():
         # if user email does not exist
     return jsonify({'message': 'Unable to change password.'})
 
+
+# check if users is correct
+@app.route('/api/v1/users/books/<int:id>', methods=['POST'])
+@jwt_required
+def borrow_book(id):
+    #to retrieve current date
+    now = datetime.datetime.now()
+    email = get_jwt_identity()
+    #add data to dictionary
+    sent_data = request.get_json(force=True)
+    data = {
+        'book_id': id,
+        'user_email': email,
+        'borrow_date': now.strftime("%d/%m/%Y"),
+        'due_date': sent_data.get('due_date'),
+        'return_date': ""
+    }
+    book = [book for book in hello_books.books_list if book['book_id'] == id]
+    if len(book) == 0:
+        return jsonify({'message': "Book Doesnt Exist"})
+    else:
+        book[0]['available'] = False
+        HelloBooks().borrow_book(data)
+        response = jsonify({
+            'book_id': data['book_id'],
+            'user': data['user_email'],
+            'borrow_date': data['borrow_date'],
+            'due_date': data['due_date'],
+            'return_date': data['return_date']
+        })
+        response.status_code = 201
+        return response
 
 
 @app.route('/api/v1/auth/users')

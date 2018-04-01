@@ -64,7 +64,8 @@ class TestBooks(unittest.TestCase):
 
     def test_book_delete(self):
         #test api can delete a single book by id
-        post_result = self.app.post('/api/v1/books', data=json.dumps(self.book_data))
+        post_result = self.app.post(
+            '/api/v1/books', data=json.dumps(self.book_data))
         self.assertEqual(post_result.status_code, 201)
         delete_result = self.app.delete('/api/v1/books/1')
         self.assertEqual(delete_result.status_code, 200)

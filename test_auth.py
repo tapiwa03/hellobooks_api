@@ -25,6 +25,15 @@ class TestAuth(unittest.TestCase):
             'email': 'jane@mail.com',
             'password': 'Jane2018'
         })
+        self.book_test = {
+            'book_id': '1',
+            'title': 'War and Peace',
+            'author': 'Leo Tolstoy',
+            'date_published': '02/12/2008',
+            'genre': 'fiction',
+            'description': 'This is a description about the book war and peace by leo tolstoy'
+        }
+
 
 
     def test_registration(self):
@@ -67,7 +76,7 @@ class TestAuth(unittest.TestCase):
         #Test to register new user
         result = self.app.post('/api/v1/auth/register', data=self.user_data2)
         # assert the status code of the response
-        self.assertEqual(result.status_code, 201)
+        self.assertEqual(result.status_code, 200)
         #login the registered user
         login = self.app.post('/api/v1/auth/login', data=json.dumps({
             'email': 'jane@mail.com',
@@ -98,6 +107,42 @@ class TestAuth(unittest.TestCase):
         self.assertEqual(reset.status_code, 201)
         self.assertIn(b'Password has been changed to Pass123', reset.data)
   
+
+    def test_borrow_book(self):
+        #test to borrow a book
+        
+        #register a user
+        result = self.app.post('/api/v1/auth/register', data=self.user_data2)
+        # assert the status code of the response
+        self.assertEqual(result.status_code, 201)
+        
+        #login the registered user
+        login = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
+        }))
+        self.assertEqual(login.status_code, 200)
+        #retrieve data from the login response
+        login_msg = json.loads(login.data)
+        access_token = login_msg['access_token']
+        
+        #add book to library
+        result = self.app.post(
+            '/api/v1/books', data=json.dumps(self.book_test))
+        self.assertEqual(result.status_code, 201)
+
+        #borrow the book
+        due_date = {"due_date": "07/07/2027"}
+        #do a post of the new password to see if it changes
+        borrow = self.app.post('/api/v1/users/books/1',
+                               data=json.dumps(due_date),
+                               headers={
+                                   'Authorization': 'Bearer {}'.format(access_token)},
+                               content_type='application/json')
+        self.assertEqual(borrow.status_code, 200)
+
+
+
 
     def tearDown(self):
         #Teardown Initialized variables
