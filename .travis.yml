@@ -9,16 +9,13 @@ install:
   - pip install cerberus
   - pip install coveralls
   - pip install codeclimate-test-reporter
-  - pip install codecov
   - pip install pytest pytest-cov
 # command to run tests
-script:
-  - pytest 
-  - nosetests --with-coverage --cover-package=app
+script: 
   - pytest --cov=./ 
 after_success:
  - coveralls
  - codeclimate-test-reporter
- - codecov
+
   
   
