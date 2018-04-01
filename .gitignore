@@ -2,7 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
-bootcamp-c2\.pytest_cache/
+bootcamp-c2/.pytest_cache/
+.pytest_cache/
 
 # C extensions
 *.so
