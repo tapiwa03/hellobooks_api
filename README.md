@@ -30,7 +30,7 @@ Hellobooks is a library management API. A list of the functions available in the
  - Run `python run.py`
 
  
-## How to run this application
+## How to navigate through the application endpoints
 - The app makes use of JWT tokens for authentication and can take JSON requests at will.
 - Postman is used to input data and get output data from the system
 - PyTest is used to test the endpoints of the APIs
