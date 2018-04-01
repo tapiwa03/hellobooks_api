@@ -1,6 +1,0 @@
-{
-  "test_auth.py::TestAuth::test_reset_user_password": true,
-  "test_auth.py::TestAuth::test_user_password_reset": true,
-  "test_book.py::TestAuth::test_user_password_reset": true,
-  "test_books.py::TestAuth::test_user_password_reset": true
-}
