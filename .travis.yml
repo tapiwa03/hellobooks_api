@@ -7,6 +7,13 @@ install:
   - pip install Flask-API
   - pip install flask-jwt-extended
   - pip install cerberus
+  - pip install coveralls
+  - pip install codeclimate-test-reporter
 # command to run tests
 script:
-  - pytest # or py.test for Python versions 3.5 and below
+  - pytest 
+after_success:
+ - coveralls
+ - codeclimate-test-reporter
+  
+  
