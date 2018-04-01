@@ -1,5 +1,5 @@
 
-from flask import jsonify, Blueprint, request, Flask
+from flask import jsonify, Blueprint, request, Flask, abort
 from flask.views import MethodView
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
@@ -39,28 +39,44 @@ def reset_password():
                 'message': "Password has been changed to Pass123. Please login and change it."
                 }), 201
         # if user email does not exist
-    return jsonify({'message': 'Unable to reset password.'})
+    return jsonify({'message': 'Email not found.'})
 
 @app.route('/api/v1/auth/register', methods=['POST'])
 def register():
-    sent_data = request.get_json(force = True)
-    data = {
-      'user_id' : len(hello_books.users_list) + 1,
-      'name' : sent_data['name'],
-      'email' : sent_data['email'],
-      'password' : sent_data['password']
-    }
-    return hello_books.user_registration(data), 201
+    try:
+        sent_data = request.get_json(force=True)
+        data = {
+            'user_id': len(hello_books.users_list) + 1,
+            'name': sent_data['name'],
+            'email': sent_data['email'],
+            'password': sent_data['password'],
+            'is_admin': False
+            }
+        #Check if email exists
+        if hello_books.check_email_exists(data['email']) == True:
+            return jsonify({'message': 'Email Exists'})
+        else:
+            #Validate data   
+            if hello_books.user_data_validation(data) == True:
+                return hello_books.user_registration(data), 201
+            else:
+                return jsonify({'message': 'Please enter all the data in the correct format.'})
+    except:
+        return jsonify({'message': 'Please enter all the data required'})
+   
 
 
 @app.route('/api/v1/auth/login', methods=['POST'])
 def login():
-    sent_data = request.get_json(force = True)
-    data = {
-      'email' : sent_data['email'],
-      'password' : sent_data['password']
-    }
-    return hello_books.user_login(data),200
+    try:
+        sent_data = request.get_json(force = True)
+        data = {
+            'email' : sent_data['email'],
+            'password' : sent_data['password']
+            }
+        return hello_books.user_login(data),200
+    except:
+        return jsonify({'message' : 'Please enter your email and password correctly'})
 
 
 @app.route('/api/v1/auth/logout', methods=['DELETE'])
@@ -79,8 +95,11 @@ def change_password():
     # if user email does exist
     for user in hello_books.users_list:
         if email == user['email']:
-            user['password'] = generate_password_hash(new_pword)
-            return jsonify({'message': "Password has been changed"}), 201
+            if hello_books.password_validation({"password": new_pword}) == True:
+                user['password'] = generate_password_hash(new_pword)
+                return jsonify({'message': "Password has been changed"}), 201
+            else:
+                return jsonify({'message': "Password needs to be 6 characters or more"})
         # if user email does not exist
     return jsonify({'message': 'Unable to change password.'})
 

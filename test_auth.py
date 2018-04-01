@@ -5,6 +5,7 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
+from cerberus import Validator
 
 
 class TestAuth(unittest.TestCase): 
@@ -39,7 +40,6 @@ class TestAuth(unittest.TestCase):
 
     def test_user_login(self):
         #test api allows user to login
-        self.test_registration()
         result=self.app.post('/api/v1/auth/login', data=json.dumps({
             'email' : 'john@mail.com',
             'password' : 'John2018'
@@ -49,8 +49,6 @@ class TestAuth(unittest.TestCase):
 
     def test_user_logout(self):
         #test api allows user to logout
-        #register and login first
-        self.test_registration()
         result=self.app.post('/api/v1/auth/login', data=json.dumps({
             'email' : 'john@mail.com',
             'password' : 'John2018'
@@ -92,13 +90,6 @@ class TestAuth(unittest.TestCase):
 
 
     def test_reset_password(self):
-        #register user first
-        result = self.app.post('/api/v1/auth/register', data=self.user_data)
-        # assert the status code of the response
-        self.assertEqual(result.status_code, 201)
-        #assert that registration message shows
-        self.assertIn(result.data,  b'{\n  "message": "Registered Successfully"\n}\n')
-
         #reset the password
         reset = self.app.post('/api/v1/auth/reset-password', data=json.dumps({
                                 'email' : 'jane@mail.com'

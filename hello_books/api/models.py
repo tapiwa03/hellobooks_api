@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
   create_access_token
   )
+from cerberus import Validator
 
 
 class HelloBooks(object):
@@ -16,7 +17,11 @@ class HelloBooks(object):
     #list to holld all books
     self.books_list = []
 
-  #base methods, will be used multiple times
+    """
+    HELPER METHODS FOR USER VIEWS
+    """
+
+  #check for email existence
   def check_email_exists(self, search_email):
     for find_email in self.users_list:
       if find_email['email'] == search_email:
@@ -29,6 +34,27 @@ class HelloBooks(object):
       if find_email['email'] == search_email:
         return find_email
     return False
+
+  
+  def user_data_validation(self, dict_data):
+    schema={
+        'name': {'type': 'string', 'required': True, 'empty': False, 'maxlength': 20, 'minlength': 4},
+        'email': {'type': 'string', 'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'},
+        'password': {'type': 'string', 'required': True, 'maxlength': 16, 'minlength': 6}
+    }
+    v = Validator(schema)
+    v.allow_unknown = True
+    return v.validate(dict_data)
+
+  def password_validation(self, dict_data):
+    schema = {
+        'password': {'type': 'string', 'required': True, 'maxlength': 16, 'minlength': 6}
+    } 
+    v = Validator(schema)
+    v.allow_unknown = True
+    return v.validate(dict_data)
+
+
 
 
 

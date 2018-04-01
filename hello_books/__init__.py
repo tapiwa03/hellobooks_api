@@ -4,7 +4,7 @@ from flask_api import FlaskAPI
 from flask_jwt_extended import (
   JWTManager
   )
-
+from cerberus import Validator
 #instantiate flask 
 app = FlaskAPI(__name__)
 
