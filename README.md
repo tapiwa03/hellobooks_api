@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/3V0L/bootcamp-c2.svg?branch=master)](https://travis-ci.org/3V0L/bootcamp-c2)
+
 [![Coverage Status](https://coveralls.io/repos/github/3V0L/bootcamp-c2/badge.svg?branch=master)](https://coveralls.io/github/3V0L/bootcamp-c2?branch=master)
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/e356e72db224b9f46c56/maintainability)](https://codeclimate.com/github/3V0L/bootcamp-c2/maintainability)
 
 # Hellobooks 
 

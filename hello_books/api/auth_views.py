@@ -1,5 +1,5 @@
 
-from flask import jsonify, Blueprint, request, Flask, abort
+from flask import jsonify, Blueprint, request, Flask, abort, render_template
 from flask.views import MethodView
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
@@ -27,6 +27,9 @@ auth = Blueprint('auth', __name__)
 
 hello_books = HelloBooks()
 
+@app.route('/')
+def home():
+    return "<html><body><h1>Hello Books API</h1><br><a href='https://hellobooks8.docs.apiary.io/'>Click here for documentation.</a></body></html >"
 
 @app.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
