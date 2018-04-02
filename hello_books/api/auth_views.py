@@ -27,7 +27,7 @@ auth = Blueprint('auth', __name__)
 
 hello_books = HelloBooks()
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def home():
     return "<html><body><h1>Hello Books API</h1><br><a href='https://hellobooks8.docs.apiary.io/'>Click here for documentation.</a></body></html >"
 
