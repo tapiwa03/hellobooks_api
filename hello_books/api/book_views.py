@@ -8,7 +8,7 @@ from flask_jwt_extended import (
     create_access_token, get_raw_jwt
 )
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import datetime
 
 blacklist = set()
 
@@ -34,24 +34,42 @@ def edit_book(id):
     book = [book for book in hello_books.books_list if book['book_id'] == id]
     # checking if the input is in the right format
     if len(book) == 0:
-        return jsonify({'message': "Book Doesnt Exist"})
+        return jsonify({'message': "Book Doesn't Exist"})
     if not request.json:
         abort(400)
+    #Check if title is entered and if it is correct    
     if 'title' in request.json:
-        book[0]['title'] = request.json['title']
+        if hello_books.add_book_validation({'title': request.json['title']}) == True:
+            book[0]['title'] = request.json['title']
+        else:
+            return jsonify({'message': 'Please enter a correct title above 4 characters'})
+    #check if author is entered and if it is correct
     if 'author' in request.json:
-        book[0]['author'] = request.json['author']
+        if hello_books.add_book_validation({'author': request.json['author']}) == True:
+            book[0]['author'] = request.json['author']
+        else:
+            return jsonify({'message': 'Please enter a correct author above 4 characters'})
+    #check if date is correctly entered    
     if 'date_published' in request.json:
-        book[0]['date_published'] = request.json['date_published']
+        if hello_books.date_validate(request.json['date_published']) == True:
+            book[0]['date_published'] = request.json['date_published']
+        else:
+            return jsonify({'message': 'Please enter a correct date format DD-MM-YYYY'})
     if 'genre' in request.json:
-        book[0]['genre'] = request.json['genre']
+        if hello_books.add_book_validation({'genre': request.json['genre']}) == True:
+            book[0]['genre'] = request.json['genre']
+        else:
+            return jsonify({"message": "Please enter a genre between 4-10 characters" })
     if 'description' in request.json:
-        book[0]['description'] = request.json['description']
+        if hello_books.add_book_validation({'description': request.json['description']}) == True:
+            book[0]['description'] = request.json['description']
+        else:
+            return jsonify({'message' : "Description should be between 4-200 characters"})
 
     if hello_books.add_book_validation(book[0]) == True:
         return jsonify({'book': book[0]})
     else:
-        return jsonify({"message": "Please ensure correct entry of data"})
+        return jsonify({"message": "Please enter book data correctly"})
 
 
 
@@ -83,7 +101,42 @@ def add_book():
     else:
         return jsonify({"message": "Please enter correct book details"})
 
-    
+
+# check if users is correct
+@app.route('/api/v1/users/books/<int:id>', methods=['POST', 'GET', 'PUT'])
+@jwt_required
+def borrow_book(id):
+    #to retrieve current date
+    now = datetime.datetime.now()
+    email = get_jwt_identity()
+    book = [book for book in hello_books.books_list if book['book_id'] == id]
+    #add data to dictionary
+    sent_data = request.get_json(force=True)
+    data = {
+        'book_id': id,
+        'user_email': email,
+        'borrow_date': now.strftime("%d/%m/%Y"),
+        'due_date': sent_data.get('due_date'),
+        'return_date': ""
+    }
+
+    if len(book) == 0:
+        return jsonify({'message': "Book Doesnt Exist"})
+    elif book[0]['available'] == False:
+        return jsonify({'message': "The book has already been borrowed"})
+    else:
+        book[0]['available'] = False
+        HelloBooks().borrow_book(data)
+        response = jsonify({
+            'book_id': data['book_id'],
+            'user': data['user_email'],
+            'borrow_date': data['borrow_date'],
+            'due_date': data['due_date'],
+            'return_date': data['return_date']
+        })
+        response.status_code = 201
+        return response
+
 
 
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])

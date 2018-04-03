@@ -1,10 +1,20 @@
-from hello_books import app, jwt
+import os, sys
+#from hello_books import app, jwt
 from flask import Flask, json, jsonify
 from cerberus import Validator
 
 #Import unittest and os dependancy module
 import unittest
+from hello_books import app, jwt
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
+from cerberus import Validator
 
+
+
+# Import the view file
 
 class TestBooks(unittest.TestCase):
     #Set up methods for test cases
