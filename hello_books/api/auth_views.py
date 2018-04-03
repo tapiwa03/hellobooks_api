@@ -31,7 +31,6 @@ hello_books = HelloBooks()
 def home():
     return jsonify({'Hello Books API': "Click here to see documentation -> https://hellobooks8.docs.apiary.io/"})
 
-
 @app.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
     email = request.json.get('email')
