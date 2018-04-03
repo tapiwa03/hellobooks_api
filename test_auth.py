@@ -87,10 +87,10 @@ class TestAuth(unittest.TestCase):
         login_msg = json.loads(login.data)
         access_token = login_msg['access_token']
         #set variable for the new password
-        new_password = {"new_pword": "PasswordNew"}
+        password = {"old_password": "Jane2018", "new_password": "PasswordNew"}
         #do a post of the new password to see if it changes
         change = self.app.post('/api/v1/auth/change-password',
-                                data=json.dumps(new_password),
+                                data=json.dumps(password),
                                 headers={'Authorization': 'Bearer {}'.format(access_token)},
                                 content_type='application/json')
         self.assertEqual(change.status_code, 201)
@@ -139,7 +139,7 @@ class TestAuth(unittest.TestCase):
                                headers={
                                    'Authorization': 'Bearer {}'.format(access_token)},
                                content_type='application/json')
-        self.assertEqual(borrow.status_code, 200)
+        self.assertEqual(borrow.status_code, 201)
 
 
 

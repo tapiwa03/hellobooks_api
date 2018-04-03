@@ -1,5 +1,5 @@
 
-from flask import jsonify, Blueprint, request, Flask, abort
+from flask import jsonify, Blueprint, request, Flask, abort, render_template
 from flask.views import MethodView
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
@@ -26,6 +26,10 @@ auth = Blueprint('auth', __name__)
 
 
 hello_books = HelloBooks()
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({'Hello Books API': "Click here to see documentation -> https://hellobooks8.docs.apiary.io/"})
 
 
 @app.route('/api/v1/auth/reset-password', methods=['POST'])
@@ -91,50 +95,23 @@ def logout():
 @jwt_required
 def change_password():
     email = get_jwt_identity()
-    new_pword = request.json.get('new_pword')
+    new_password = request.json.get('new_password')
+    old_password = request.json.get('old_password')
     # if user email does exist
     for user in hello_books.users_list:
         if email == user['email']:
-            if hello_books.password_validation({"password": new_pword}) == True:
-                user['password'] = generate_password_hash(new_pword)
-                return jsonify({'message': "Password has been changed"}), 201
+            if hello_books.password_validation({"password": new_password}) == True:
+                if check_password_hash(user['password'], old_password):
+                    user['password'] = generate_password_hash(new_password)
+                    return jsonify({'message': "Password has been changed"}), 201
+                else:
+                    return jsonify({"message": "Old password does not match"})
             else:
                 return jsonify({'message': "Password needs to be 6 characters or more"})
         # if user email does not exist
     return jsonify({'message': 'Unable to change password.'})
 
 
-# check if users is correct
-@app.route('/api/v1/users/books/<int:id>', methods=['POST'])
-@jwt_required
-def borrow_book(id):
-    #to retrieve current date
-    now = datetime.datetime.now()
-    email = get_jwt_identity()
-    #add data to dictionary
-    sent_data = request.get_json(force=True)
-    data = {
-        'book_id': id,
-        'user_email': email,
-        'borrow_date': now.strftime("%d/%m/%Y"),
-        'due_date': sent_data.get('due_date'),
-        'return_date': ""
-    }
-    book = [book for book in hello_books.books_list if book['book_id'] == id]
-    if len(book) == 0:
-        return jsonify({'message': "Book Doesnt Exist"})
-    else:
-        book[0]['available'] = False
-        HelloBooks().borrow_book(data)
-        response = jsonify({
-            'book_id': data['book_id'],
-            'user': data['user_email'],
-            'borrow_date': data['borrow_date'],
-            'due_date': data['due_date'],
-            'return_date': data['return_date']
-        })
-        response.status_code = 201
-        return response
 
 
 @app.route('/api/v1/auth/users')
@@ -148,3 +125,4 @@ def view_users():
 def protected():
     return jsonify({'hello': 'world'})
     
+

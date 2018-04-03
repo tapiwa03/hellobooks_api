@@ -4,6 +4,7 @@ from flask_jwt_extended import (
   create_access_token
   )
 from cerberus import Validator
+import datetime
 
 
 class HelloBooks(object):
@@ -119,14 +120,21 @@ class HelloBooks(object):
 
   def add_book_validation(self, dict_data):
     schema = {
-        'title': {'type': 'string', 'required': True, 'empty': False, 'maxlength': 25, 'minlength': 4},
-        'author': {'type': 'string', 'required': True, 'empty': False, 'maxlength': 25, 'minlength': 4},
-        'genre': {'type': 'string', 'required': True, 'empty': False, 'maxlength': 10, 'minlength': 4},
-        'description': {'type': 'string', 'required': False, 'maxlength': 200, 'minlength': 4},
+        'title': {'type': 'string', 'required': False, 'empty': True, 'maxlength': 25, 'minlength': 4},
+        'author': {'type': 'string', 'required': False, 'empty': True, 'maxlength': 25, 'minlength': 4},
+        'genre': {'type': 'string', 'required': False, 'empty': True, 'maxlength': 10, 'minlength': 4},
+        'description': {'type': 'string', 'required': False, 'maxlength': 200, 'minlength': 4}
     }
     v = Validator(schema)
     v.allow_unknown = True
     return v.validate(dict_data)
+
+  def date_validate(self,date_text):
+    try:
+        datetime.datetime.strptime(date_text, '%d-%m-%Y')
+        return True
+    except:
+        return False
 
   """
   END OF BOOK CODE
