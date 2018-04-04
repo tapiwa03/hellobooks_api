@@ -1,52 +1,46 @@
-
-from flask import jsonify, Blueprint, request, Flask, abort, render_template
-from flask.views import MethodView
+'''ímport dependancies'''
+import datetime
+from flask import jsonify, Blueprint, request, Flask
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
 )
 from werkzeug.security import generate_password_hash, check_password_hash
-from hello_books import app
+from hello_books import app, jwt
 from hello_books.api.models import HelloBooks
-import datetime
-#set blacklist for tokens which cannot be used again
+
 blacklist = set()
 
-
-jwt = JWTManager(app)
-#check if jwt token is in blacklist
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
+    '''check if token is blacklisted'''
     jti = decrypted_token['jti']
     return jti in blacklist
 
-
-#instantiate blueprint and assign to var auth 
 auth = Blueprint('auth', __name__)
-
-
 hello_books = HelloBooks()
 
 @app.route('/', methods=['GET'])
 def home():
-    return jsonify({'Hello Books API': "Click here to see documentation -> https://hellobooks8.docs.apiary.io/"})
-
+    '''Home page containing link to documentation'''
+    return jsonify(
+        {'Hello Books API': "Click here to see documentation -> https://hellobooks8.docs.apiary.io/"})
 
 @app.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
+    '''Function to reseta user password'''
     email = request.json.get('email')
-    # if user email does exist
     for user in hello_books.users_list:
         if email == user['email']:
             user['password'] = generate_password_hash("Pass123")
             return jsonify({
                 'message': "Password has been changed to Pass123. Please login and change it."
-                }), 201
-        # if user email does not exist
+            }), 201
     return jsonify({'message': 'Email not found.'})
 
 @app.route('/api/v1/auth/register', methods=['POST'])
 def register():
+    '''Fuction to register a new user'''
     try:
         sent_data = request.get_json(force=True)
         data = {
@@ -55,74 +49,65 @@ def register():
             'email': sent_data['email'],
             'password': sent_data['password'],
             'is_admin': False
-            }
-        #Check if email exists
-        if hello_books.check_email_exists(data['email']) == True:
+        }
+        if hello_books.check_email_exists(data['email']):
             return jsonify({'message': 'Email Exists'})
         else:
-            #Validate data   
-            if hello_books.user_data_validation(data) == True:
+            if hello_books.user_data_validation(data):
                 return hello_books.user_registration(data), 201
             else:
-                return jsonify({'message': 'Please enter all the data in the correct format.'})
-    except:
+                return jsonify(
+                    {'message': 'Please enter all the data in the correct format.'})
+    except BaseException:
         return jsonify({'message': 'Please enter all the data required'})
-   
-
 
 @app.route('/api/v1/auth/login', methods=['POST'])
 def login():
+    '''Function for logging in'''
     try:
-        sent_data = request.get_json(force = True)
+        sent_data = request.get_json(force=True)
         data = {
-            'email' : sent_data['email'],
-            'password' : sent_data['password']
-            }
-        return hello_books.user_login(data),200
-    except:
-        return jsonify({'message' : 'Please enter your email and password correctly'})
+            'email': sent_data['email'],
+            'password': sent_data['password']
+        }
+        return hello_books.user_login(data), 200
+    except BaseException:
+        return jsonify(
+            {'message': 'Please enter your email and password correctly'})
 
-
-@app.route('/api/v1/auth/logout', methods=['DELETE'])
+@app.route('/api/v1/auth/logout', methods=['GET', 'POST'])
 @jwt_required
 def logout():
-    jti = get_raw_jwt()['jti']
-    blacklist.add(jti)
+    '''Function for logout'''
+    token_identifier = get_raw_jwt()['jti']
+    blacklist.add(token_identifier)
     return jsonify({'message': 'You are now logged out'}), 200
 
-
-@app.route('/api/v1/auth/change-password', methods=['POST'])
+@app.route('/api/v1/auth/change-password', methods=['PUT'])
 @jwt_required
 def change_password():
+    '''Function for changing user password'''
     email = get_jwt_identity()
     new_password = request.json.get('new_password')
     old_password = request.json.get('old_password')
-    # if user email does exist
     for user in hello_books.users_list:
         if email == user['email']:
-            if hello_books.password_validation({"password": new_password}) == True:
+            if hello_books.password_validation({"password": new_password}):
                 if check_password_hash(user['password'], old_password):
                     user['password'] = generate_password_hash(new_password)
-                    return jsonify({'message': "Password has been changed"}), 201
+                    return jsonify(
+                        {'message': "Password has been changed"}), 201
                 else:
                     return jsonify({"message": "Old password does not match"})
             else:
-                return jsonify({'message': "Password needs to be 6 characters or more"})
-        # if user email does not exist
+                return jsonify(
+                    {'message': "Password needs to be 6 characters or more"})
     return jsonify({'message': 'Unable to change password.'})
-
-
 
 
 @app.route('/api/v1/auth/users')
 @jwt_required
 def view_users():
+    '''Function for viewing all books'''
     return hello_books.view_users(), 200
-
-
-@app.route('/protected', methods=['GET'])
-@jwt_required
-def protected():
-    return jsonify({'hello': 'world'})
-    
 

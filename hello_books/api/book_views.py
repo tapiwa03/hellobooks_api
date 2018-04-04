@@ -1,80 +1,83 @@
-from flask import jsonify, Blueprint, request, abort, make_response, session
-from flask_api import FlaskAPI
-from flask.views import MethodView
+'''import dependancies'''
+import datetime
+from flask import jsonify, Blueprint, request, make_response, session
 from hello_books import app
 from hello_books.api.models import HelloBooks
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
 )
-from werkzeug.security import generate_password_hash, check_password_hash
-import datetime
 
 blacklist = set()
 
 
 jwt = JWTManager(app)
-#check if jwt token is in blacklist
 
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
-    jti = decrypted_token['jti']
-    return jti in blacklist
+    '''Check if token is blacklisted'''
+    token_identifier = decrypted_token['jti']
+    return token_identifier in blacklist
 
 
-# instantiate blueprint and assign to var books
 books = Blueprint('books', __name__)
-
 hello_books = HelloBooks()
 
 
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
 def edit_book(id):
+    '''Function for editing book info'''
     book = [book for book in hello_books.books_list if book['book_id'] == id]
-    # checking if the input is in the right format
     if len(book) == 0:
         return jsonify({'message': "Book Doesn't Exist"})
     if not request.json:
-        abort(400)
-    #Check if title is entered and if it is correct    
+        return jsonify({'message': "No data entered"})
+    '''Check if title is entered and if it is correct'''
     if 'title' in request.json:
-        if hello_books.add_book_validation({'title': request.json['title']}) == True:
+        if hello_books.add_book_validation({'title': request.json['title']}):
             book[0]['title'] = request.json['title']
         else:
-            return jsonify({'message': 'Please enter a correct title above 4 characters'})
-    #check if author is entered and if it is correct
+            return jsonify(
+                {'message': 'Please enter a correct title above 4 characters'})
+    '''check if author is entered and if it is correct'''
     if 'author' in request.json:
-        if hello_books.add_book_validation({'author': request.json['author']}) == True:
+        if hello_books.add_book_validation({'author': request.json['author']}):
             book[0]['author'] = request.json['author']
         else:
-            return jsonify({'message': 'Please enter a correct author above 4 characters'})
-    #check if date is correctly entered    
+            return jsonify(
+                {'message': 'Please enter a correct author above 4 characters'})
+    '''check if date is correctly entered'''
     if 'date_published' in request.json:
-        if hello_books.date_validate(request.json['date_published']) == True:
+        if hello_books.date_validate(request.json['date_published']):
             book[0]['date_published'] = request.json['date_published']
         else:
-            return jsonify({'message': 'Please enter a correct date format DD-MM-YYYY'})
+            return jsonify(
+                {'message': 'Please enter a correct date format DD-MM-YYYY'})
+    '''check if genre is entered correctly'''
     if 'genre' in request.json:
-        if hello_books.add_book_validation({'genre': request.json['genre']}) == True:
+        if hello_books.add_book_validation({'genre': request.json['genre']}):
             book[0]['genre'] = request.json['genre']
         else:
-            return jsonify({"message": "Please enter a genre between 4-10 characters" })
+            return jsonify(
+                {"message": "Please enter a genre between 4-10 characters"})
+    '''check if description entered correctly'''
     if 'description' in request.json:
-        if hello_books.add_book_validation({'description': request.json['description']}) == True:
+        if hello_books.add_book_validation(
+                {'description': request.json['description']}):
             book[0]['description'] = request.json['description']
         else:
-            return jsonify({'message' : "Description should be between 4-200 characters"})
-
-    if hello_books.add_book_validation(book[0]) == True:
+            return jsonify(
+                {'message': "Description should be between 4-200 characters"})
+    if hello_books.add_book_validation(book[0]):
         return jsonify({'book': book[0]})
     else:
         return jsonify({"message": "Please enter book data correctly"})
 
 
-
 @app.route('/api/v1/books', methods=['POST'])
 def add_book():
+    '''Function to add a book'''
     sent_data = request.get_json(force=True)
     data = {
         'book_id': len(hello_books.books_list) + 1,
@@ -85,7 +88,7 @@ def add_book():
         'description': sent_data.get('description'),
         'available': True
     }
-    if HelloBooks().add_book_validation(data) == True:
+    if HelloBooks().add_book_validation(data):
         hello_books.add_book(data)
         response = jsonify({
             'book_id': data['book_id'],
@@ -106,11 +109,11 @@ def add_book():
 @app.route('/api/v1/users/books/<int:id>', methods=['POST', 'GET', 'PUT'])
 @jwt_required
 def borrow_book(id):
-    #to retrieve current date
+    '''function to retrieve current date'''
     now = datetime.datetime.now()
     email = get_jwt_identity()
     book = [book for book in hello_books.books_list if book['book_id'] == id]
-    #add data to dictionary
+    # add data to dictionary
     sent_data = request.get_json(force=True)
     data = {
         'book_id': id,
@@ -138,9 +141,9 @@ def borrow_book(id):
         return response
 
 
-
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])
 def delete_book(id):
+    '''function to delete book'''
     book = [book for book in hello_books.books_list if book['book_id'] == id]
     if len(book) == 0:
         return jsonify({'message': "Book Doesnt Exist"})
@@ -150,16 +153,14 @@ def delete_book(id):
 
 @app.route('/api/v1/books', methods=['GET'])
 def get_all_books():
+    '''function to get all books'''
     return hello_books.view_books(), 200
 
 
 @app.route('/api/v1/books/<int:id>', methods=['GET'])
 def get_by_id(id):
+    '''function to get a single book by its id'''
     book = [book for book in hello_books.books_list if book['book_id'] == id]
     if len(book) == 0:
         return jsonify({'message': "Book Doesnt Exist"})
     return jsonify({'book': book[0]}), 200
-
-
-    
-

@@ -1,24 +1,25 @@
-#import flask
+'''import dependancies'''
 from flask_api import FlaskAPI
-#import JWT web tokens
 from flask_jwt_extended import (
-  JWTManager
-  )
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
+from flask_sqlalchemy import SQLAlchemy
 from cerberus import Validator
-#instantiate flask 
+
 app = FlaskAPI(__name__)
 
-#setup jwt for token encryption
+'''setup jwt for token encryption'''
 app.config['JWT_SECRET_KEY'] = 'Some-Key'
-app.config["PROPAGATE_EXCEPTIONS"]= True
+app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
 
-#import routes
+'''import routes'''
 from hello_books.api.auth_views import auth
 from hello_books.api.book_views import books
 
-#registering the routes to blueprints
+'''registering the routes to blueprints'''
 app.register_blueprint(auth)
 app.register_blueprint(books)
