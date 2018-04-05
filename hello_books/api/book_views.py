@@ -26,6 +26,7 @@ hello_books = HelloBooks()
 
 
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
+@jwt_required
 def edit_book(id):
     '''Function for editing book info'''
     book = [book for book in hello_books.books_list if book['book_id'] == id]
@@ -35,14 +36,14 @@ def edit_book(id):
         return jsonify({'message': "No data entered"})
     '''Check if title is entered and if it is correct'''
     if 'title' in request.json:
-        if hello_books.add_book_validation({'title': request.json['title']}):
+        if hello_books.edit_book_validation({'title': request.json['title']}):
             book[0]['title'] = request.json['title']
         else:
             return jsonify(
                 {'message': 'Please enter a correct title above 4 characters'})
     '''check if author is entered and if it is correct'''
     if 'author' in request.json:
-        if hello_books.add_book_validation({'author': request.json['author']}):
+        if hello_books.edit_book_validation({'author': request.json['author']}):
             book[0]['author'] = request.json['author']
         else:
             return jsonify(
@@ -56,26 +57,27 @@ def edit_book(id):
                 {'message': 'Please enter a correct date format DD-MM-YYYY'})
     '''check if genre is entered correctly'''
     if 'genre' in request.json:
-        if hello_books.add_book_validation({'genre': request.json['genre']}):
+        if hello_books.edit_book_validation({'genre': request.json['genre']}):
             book[0]['genre'] = request.json['genre']
         else:
             return jsonify(
                 {"message": "Please enter a genre between 4-10 characters"})
     '''check if description entered correctly'''
     if 'description' in request.json:
-        if hello_books.add_book_validation(
+        if hello_books.edit_book_validation(
                 {'description': request.json['description']}):
             book[0]['description'] = request.json['description']
         else:
             return jsonify(
                 {'message': "Description should be between 4-200 characters"})
-    if hello_books.add_book_validation(book[0]):
+    if hello_books.edit_book_validation(book[0]):
         return jsonify({'book': book[0]})
     else:
         return jsonify({"message": "Please enter book data correctly"})
 
 
 @app.route('/api/v1/books', methods=['POST'])
+@jwt_required
 def add_book():
     '''Function to add a book'''
     sent_data = request.get_json(force=True)
@@ -142,6 +144,7 @@ def borrow_book(id):
 
 
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_book(id):
     '''function to delete book'''
     book = [book for book in hello_books.books_list if book['book_id'] == id]
