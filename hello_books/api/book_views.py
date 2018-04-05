@@ -26,6 +26,7 @@ hello_books = HelloBooks()
 
 
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
+@jwt_required
 def edit_book(id):
     '''Function for editing book info'''
     book = [book for book in hello_books.books_list if book['book_id'] == id]
@@ -76,6 +77,7 @@ def edit_book(id):
 
 
 @app.route('/api/v1/books', methods=['POST'])
+@jwt_required
 def add_book():
     '''Function to add a book'''
     sent_data = request.get_json(force=True)
@@ -142,6 +144,7 @@ def borrow_book(id):
 
 
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_book(id):
     '''function to delete book'''
     book = [book for book in hello_books.books_list if book['book_id'] == id]

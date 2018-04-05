@@ -39,6 +39,7 @@ class TestAuth(unittest.TestCase):
             'description': 'This is a description about the book war and peace by leo tolstoy'
         }
 
+
     def test_registration(self):
         '''sends HTTP GET request to the application'''
         result = self.app.post('/api/v1/auth/register', data=self.user_data)
@@ -118,7 +119,10 @@ class TestAuth(unittest.TestCase):
         login_msg = json.loads(login.data)
         access_token = login_msg['access_token']
         result = self.app.post(
-            '/api/v1/books', data=json.dumps(self.book_test))
+            '/api/v1/books',
+            data=json.dumps(self.book_test),
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)},)
         self.assertEqual(result.status_code, 201)
         due_date = {"due_date": "07/07/2027"}
         borrow = self.app.post(

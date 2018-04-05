@@ -28,7 +28,7 @@ def home():
 
 @app.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
-    '''Function to reseta user password'''
+    '''Function to reset a user password'''
     email = request.json.get('email')
     for user in hello_books.users_list:
         if email == user['email']:

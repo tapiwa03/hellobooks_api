@@ -7,6 +7,7 @@ from flask_jwt_extended import (
 from flask_sqlalchemy import SQLAlchemy
 from cerberus import Validator
 
+
 app = FlaskAPI(__name__)
 
 '''setup jwt for token encryption'''
