@@ -2,6 +2,7 @@
 from flask import jsonify
 from hello_books import app
 
+app.url_map.strict_slashes = False
 
 @app.errorhandler(404)
 def not_found(error):

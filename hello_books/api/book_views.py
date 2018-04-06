@@ -128,7 +128,7 @@ def borrow_book(id):
     if len(book) == 0:
         return jsonify({'message': "Book Doesnt Exist"})
     elif book[0]['available'] == False:
-        return jsonify({'message': "The book has already been borrowed"})
+        return jsonify({'message': "The book has already been borrowed"}), 409
     else:
         book[0]['available'] = False
         HelloBooks().borrow_book(data)

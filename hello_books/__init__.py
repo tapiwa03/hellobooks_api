@@ -6,14 +6,13 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from cerberus import Validator
 
 app = FlaskAPI(__name__)
 
 '''Create DB'''
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+db.init_app(app)
 '''End of DB code'''
 
 

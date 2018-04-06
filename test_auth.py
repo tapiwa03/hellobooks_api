@@ -118,7 +118,10 @@ class TestAuth(unittest.TestCase):
         login_msg = json.loads(login.data)
         access_token = login_msg['access_token']
         result = self.app.post(
-            '/api/v1/books', data=json.dumps(self.book_test))
+            '/api/v1/books',
+            data=json.dumps(self.book_test),
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(result.status_code, 201)
         due_date = {"due_date": "07/07/2027"}
         borrow = self.app.post(
