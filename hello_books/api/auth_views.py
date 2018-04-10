@@ -29,47 +29,47 @@ def home():
 @app.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
     '''Function to reseta user password'''
-    email = request.json.get('email')
+    email = request.json.get('email').strip()
     for user in hello_books.users_list:
         if email == user['email']:
             user['password'] = generate_password_hash("Pass123")
             return jsonify({
                 'message': "Password has been changed to Pass123. Please login and change it."
             }), 201
-    return jsonify({'message': 'Email not found.'})
+    return jsonify({'message': 'Email not found.'}), 404
 
 @app.route('/api/v1/auth/register', methods=['POST'])
 def register():
     '''Fuction to register a new user'''
     try:
         sent_data = request.get_json(force=True)
-        data = {
-            'user_id': len(hello_books.users_list) + 1,
+        raw_data = {
             'name': sent_data['name'],
             'email': sent_data['email'],
-            'password': sent_data['password'],
-            'is_admin': False
+            'password': sent_data['password']
         }
+        data = {k.strip(): v.strip() for k, v in raw_data.items()}
         if hello_books.check_email_exists(data['email']):
             return jsonify({'message': 'Email Exists'})
         else:
-            if hello_books.user_data_validation(data):
+            if hello_books.user_data_validation(data) == True:
                 return hello_books.user_registration(data), 201
             else:
                 return jsonify(
                     {'message': 'Please enter all the data in the correct format.'})
     except BaseException:
-        return jsonify({'message': 'Please enter all the data required'})
+        return jsonify({'message': "Data has not been input correctly."})
 
 @app.route('/api/v1/auth/login', methods=['POST'])
 def login():
     '''Function for logging in'''
     try:
         sent_data = request.get_json(force=True)
-        data = {
+        raw_data = {
             'email': sent_data['email'],
             'password': sent_data['password']
         }
+        data = {k.strip(): v.strip() for k, v in raw_data.items()}
         return hello_books.user_login(data), 200
     except BaseException:
         return jsonify(
@@ -88,17 +88,17 @@ def logout():
 def change_password():
     '''Function for changing user password'''
     email = get_jwt_identity()
-    new_password = request.json.get('new_password')
-    old_password = request.json.get('old_password')
+    new_password = request.json.get('new_password').strip()
+    old_password = request.json.get('old_password').strip()
     for user in hello_books.users_list:
         if email == user['email']:
-            if hello_books.password_validation({"password": new_password}):
+            if hello_books.password_validation({"password": new_password}) == True:
                 if check_password_hash(user['password'], old_password):
                     user['password'] = generate_password_hash(new_password)
                     return jsonify(
                         {'message': "Password has been changed"}), 201
                 else:
-                    return jsonify({"message": "Old password does not match"})
+                    return jsonify({"message": "Old password does not match"}), 401
             else:
                 return jsonify(
                     {'message': "Password needs to be 6 characters or more"})

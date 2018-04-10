@@ -14,7 +14,6 @@ class HelloBooks(object):
 
     def __init__(self):
         '''creating a list containing dictionaries to act as a database'''
-        self.users_counter = 0
         self.users_list = []
         self.books_list = []
         self.borrow_details = []
@@ -78,6 +77,8 @@ class HelloBooks(object):
     """
 
     def user_registration(self, data):
+        data['user_id'] = len(self.users_list) + 1
+        data['is_admin'] = False
         data['password'] = generate_password_hash(data['password'])
         self.users_list.append(data)
         return jsonify({'message': 'Registered Successfully'})
@@ -105,6 +106,8 @@ class HelloBooks(object):
     """
 
     def add_book(self, data):
+        data['book_id'] = len(self.books_list) + 1
+        data['available'] = True
         self.books_list.append(data)
         return jsonify({'message': 'Book Added'})
 
