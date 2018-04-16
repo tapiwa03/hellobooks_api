@@ -13,6 +13,7 @@ from flask_script import Manager
 app = FlaskAPI(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:test1234@localhost/testdb"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -21,6 +22,28 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
 
+class User(db.Model):
+
+  __tablename__ = 'users'
+  id = db.Column(db.Integer, primary_key=True)
+  username = db.Column(db.String(25))
+  email = db.Column(db.String(60), index=True, unique=True)
+  password = db.Column(db.String(256))
+  is_admin = db.Column(db.Boolean, default=False)
+  authorized = db.Column(db.Boolean, default=False)
+
+
+class Books(db.Model):
+
+  __tablename__ = 'books'
+  id = db.Column(db.Integer, primary_key=True)
+  title = db.Column(db.String(60), unique=True)
+  author = db.Column(db.String(60))
+  date_published = db.Column(db.String(60))
+  genre = db.Column(db.String(20), unique=True)
+  description = db.Column(db.String(200))
+  copies = db.Column(db.Integer)
+  isbn = db.Column(db.Integer, unique=True, index=True)
 
 
 
