@@ -4,7 +4,6 @@ class Config:
     CSRF_ENABLED = True
     SECRET_KEY = 'Some-Key'
     SQLALCHEMY_DATABASE_URI = 'postgresql://postgre:test1234@localhost:5432/hellobooks'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
     def init_app(app):
