@@ -7,7 +7,7 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from hello_books import app, jwt
-from hello_books.models import HelloBooks
+from hello_books.models import HelloBooks,User
 
 blacklist = set()
 
@@ -30,35 +30,40 @@ def home():
 def reset_password():
     '''Function to reseta user password'''
     email = request.json.get('email').strip()
-    for user in hello_books.users_list:
-        if email == user['email']:
-            user['password'] = generate_password_hash("Pass123")
-            return jsonify({
-                'message': "Password has been changed to Pass123. Please login and change it."
-            }), 201
-    return jsonify({'message': 'Email not found.'}), 404
+    if User().reset_password(email) == True:
+        return jsonify({
+            'message': "Password has been changed to Pass123. Please login and change it."
+        }), 201
+    return jsonify({
+        'message': "Email not found."
+    }), 404
+
+    
 
 @app.route('/api/v1/auth/register', methods=['POST'])
 def register():
     '''Fuction to register a new user'''
-    try:
-        sent_data = request.get_json(force=True)
-        raw_data = {
-            'name': sent_data['name'],
-            'email': sent_data['email'],
-            'password': sent_data['password']
-        }
-        data = {k.strip(): v.strip() for k, v in raw_data.items()}
-        if hello_books.check_email_exists(data['email']):
-            return jsonify({'message': 'Email Exists'})
+    
+    sent_data = request.get_json(force=True)
+    raw_data = {
+        'name': sent_data['name'],
+        'email': sent_data['email'],
+        'password': sent_data['password']
+    }
+    data = {k.strip(): v.strip() for k, v in raw_data.items()}
+    if User().check_email_exists(data['email']) == True:
+        return jsonify({'message': 'Email Exists'})
+    else:
+        if hello_books.user_data_validation(data) == True:
+            new_user = User(
+                username = data['name'],
+                email=data['email'],
+                password=User().hash_password(data['password']))
+            User().save(new_user)
+            return jsonify({'message': 'Registered Successfully.'}), 201
         else:
-            if hello_books.user_data_validation(data) == True:
-                return hello_books.user_registration(data), 201
-            else:
-                return jsonify(
-                    {'message': 'Please enter all the data in the correct format.'})
-    except BaseException:
-        return jsonify({'message': "Data has not been input correctly."})
+            return jsonify(
+                {'message': 'Please enter all the data in the correct format.'})
 
 @app.route('/api/v1/auth/login', methods=['POST'])
 def login():

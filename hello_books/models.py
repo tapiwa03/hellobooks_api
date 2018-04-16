@@ -9,11 +9,12 @@ from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
+from . import app
 
-app = FlaskAPI(__name__)
 
+'''Database setup'''
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:test1234@localhost/testdb"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -22,28 +23,74 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
 
+
 class User(db.Model):
 
-  __tablename__ = 'users'
-  id = db.Column(db.Integer, primary_key=True)
-  username = db.Column(db.String(25))
-  email = db.Column(db.String(60), index=True, unique=True)
-  password = db.Column(db.String(256))
-  is_admin = db.Column(db.Boolean, default=False)
-  authorized = db.Column(db.Boolean, default=False)
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(25))
+    email = db.Column(db.String(60), index=True, unique=True)
+    password = db.Column(db.String(256))
+    is_admin = db.Column(db.Boolean, default=False)
+    authorized = db.Column(db.Boolean, default=False)
+
+    def check_email_exists(self, search_email):
+        '''check for email existence'''
+        if User().query.filter(User.email == search_email).count() != 0:
+            return True
+        return False
+
+    def reset_password(self, mail):
+        try:
+            user = User().query.filter_by(email=mail).first()
+            user.password = User().hash_password('Pass123')
+            db.session.commit()
+            return True
+        except:
+            return False
+  
+
+    def save(self, data):
+        db.session.add(data)
+        db.session.commit()
+
+
+    def delete(self, data):
+        db.session.delete(data)
+        db.session.commit()
+
+    def hash_password(self, data):
+         return generate_password_hash(data)
 
 
 class Books(db.Model):
+    
+    
+    __tablename__ = 'books'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(60), unique=True)
+    author = db.Column(db.String(60))
+    date_published = db.Column(db.String(60))
+    genre = db.Column(db.String(20), unique=True)
+    description = db.Column(db.String(200))
+    copies = db.Column(db.Integer)
+    isbn = db.Column(db.Integer, unique=True, index=True)
 
-  __tablename__ = 'books'
-  id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String(60), unique=True)
-  author = db.Column(db.String(60))
-  date_published = db.Column(db.String(60))
-  genre = db.Column(db.String(20), unique=True)
-  description = db.Column(db.String(200))
-  copies = db.Column(db.Integer)
-  isbn = db.Column(db.Integer, unique=True, index=True)
+    def __init__(self, title, author, date_published, genre, description, copies, isbn):
+        self.title = title
+        self.author = author
+        self.date_published = date_published
+        self.genre = genre
+        self.description = description
+        self.copies = copies
+        self.isbn = isbn
+
+    @staticmethod
+    def get_by_id(book_id):
+        return Books.query.get(book_id)
+    @staticmethod    
+    def get_all():
+        return Books.query.all()
 
 
 
@@ -59,12 +106,7 @@ class HelloBooks(object):
     HELPER METHODS FOR USER VIEWS
     """
 
-    def check_email_exists(self, search_email):
-        '''check for email existence'''
-        for find_email in self.users_list:
-            if find_email['email'] == search_email:
-                return True
-        return False
+    
 
     def check_email_for_login(self, search_email):
         '''this checks the list and returns the email or false'''
@@ -114,12 +156,6 @@ class HelloBooks(object):
     Code for user methods that are imported into auth_views.py
     """
 
-    def user_registration(self, data):
-        data['user_id'] = len(self.users_list) + 1
-        data['is_admin'] = False
-        data['password'] = generate_password_hash(data['password'])
-        self.users_list.append(data)
-        return jsonify({'message': 'Registered Successfully'})
 
     def user_login(self, data):
         if not self.check_email_exists(data['email']):
