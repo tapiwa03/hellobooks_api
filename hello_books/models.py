@@ -34,11 +34,36 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     authorized = db.Column(db.Boolean, default=False)
 
+    def save(self, data):
+        db.session.add(data)
+        db.session.commit()
+
+    def delete(self, data):
+        db.session.delete(data)
+        db.session.commit()
+
+    def hash_password(self, data):
+         return generate_password_hash(data)
+         
     def check_email_exists(self, search_email):
         '''check for email existence'''
         if User().query.filter(User.email == search_email).count() != 0:
             return True
         return False
+    
+    def user_login(self, mail, password):
+        '''this checks the list and returns the email or false'''
+        user = User().query.filter_by(email=mail).first()
+        if self.check_email_exists(mail) == False:
+            return jsonify({'message': 'Email does not exist.'})
+        elif self.check_email_exists(mail) == True:
+            if check_password_hash(user.password, password) is True:
+                access_token = create_access_token(identity=mail)
+                return jsonify(access_token=access_token), 200
+            else:
+                return jsonify({'message': 'Incorrect Password.'}), 401
+        else:
+            return jsonify({'message': 'Details match no record. Would you like to register?'})
 
     def reset_password(self, mail):
         try:
@@ -48,19 +73,20 @@ class User(db.Model):
             return True
         except:
             return False
-  
 
-    def save(self, data):
-        db.session.add(data)
-        db.session.commit()
-
-
-    def delete(self, data):
-        db.session.delete(data)
-        db.session.commit()
-
-    def hash_password(self, data):
-         return generate_password_hash(data)
+    def change_password(self, old_password, new_password, mail):
+        user = User().query.filter_by(email=mail).first()
+        if HelloBooks().password_validation({"password": new_password}) == True:
+            if check_password_hash(user.password, old_password) is True:
+                user.password = self.hash_password(new_password)
+                db.session.commit()
+                return jsonify(
+                    {'message': "Password has been changed"}), 201
+            else:
+                return jsonify({"message": "Old password does not match"}), 401
+        else:
+            return jsonify(
+                {'message': "Password needs to be 6 characters or more"}) 
 
 
 class Books(db.Model):
@@ -108,12 +134,7 @@ class HelloBooks(object):
 
     
 
-    def check_email_for_login(self, search_email):
-        '''this checks the list and returns the email or false'''
-        for find_email in self.users_list:
-            if find_email['email'] == search_email:
-                return find_email
-        return False
+    
 
     def user_data_validation(self, dict_data):
         '''user data validation method'''
@@ -157,17 +178,7 @@ class HelloBooks(object):
     """
 
 
-    def user_login(self, data):
-        if not self.check_email_exists(data['email']):
-            return jsonify({'message': 'Email does not exist'})
-        get_email_for_login = self.check_email_for_login(data['email'])
-        if check_password_hash(
-                get_email_for_login['password'],
-                data['password']):
-            access_token = create_access_token(identity=data['email'])
-            return jsonify(access_token=access_token)
-        else:
-            return jsonify({'message': 'Wrong Credentials'})
+    
 
     def view_users(self):
         return jsonify(self.users_list)

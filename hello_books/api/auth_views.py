@@ -26,6 +26,7 @@ def home():
     return jsonify(
         {'Hello Books API': "Click here to see documentation -> https://hellobooks8.docs.apiary.io/"})
 
+
 @app.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
     '''Function to reseta user password'''
@@ -37,7 +38,6 @@ def reset_password():
     return jsonify({
         'message': "Email not found."
     }), 404
-
     
 
 @app.route('/api/v1/auth/register', methods=['POST'])
@@ -65,6 +65,7 @@ def register():
             return jsonify(
                 {'message': 'Please enter all the data in the correct format.'})
 
+
 @app.route('/api/v1/auth/login', methods=['POST'])
 def login():
     '''Function for logging in'''
@@ -75,10 +76,14 @@ def login():
             'password': sent_data['password']
         }
         data = {k.strip(): v.strip() for k, v in raw_data.items()}
-        return hello_books.user_login(data), 200
+        return User().user_login(
+            mail=data['email'],
+            password=data['password']
+        )
     except BaseException:
         return jsonify(
             {'message': 'Please enter your email and password correctly'})
+
 
 @app.route('/api/v1/auth/logout', methods=['GET', 'POST'])
 @jwt_required
@@ -88,27 +93,21 @@ def logout():
     blacklist.add(token_identifier)
     return jsonify({'message': 'You are now logged out'}), 200
 
+
 @app.route('/api/v1/auth/change-password', methods=['PUT'])
 @jwt_required
 def change_password():
     '''Function for changing user password'''
-    email = get_jwt_identity()
-    new_password = request.json.get('new_password').strip()
-    old_password = request.json.get('old_password').strip()
-    for user in hello_books.users_list:
-        if email == user['email']:
-            if hello_books.password_validation({"password": new_password}) == True:
-                if check_password_hash(user['password'], old_password):
-                    user['password'] = generate_password_hash(new_password)
-                    return jsonify(
-                        {'message': "Password has been changed"}), 201
-                else:
-                    return jsonify({"message": "Old password does not match"}), 401
-            else:
-                return jsonify(
-                    {'message': "Password needs to be 6 characters or more"})
-    return jsonify({'message': 'Unable to change password.'})
-
+    try:
+        email = get_jwt_identity()
+        new_password = request.json.get('new_password').strip()
+        old_password = request.json.get('old_password').strip()
+        return User().change_password(
+            old_password=old_password,
+            new_password=new_password,
+            mail=email)
+    except:
+        return jsonify({"message": "An error occured. Please try again."})
 
 @app.route('/api/v1/auth/users')
 @jwt_required
