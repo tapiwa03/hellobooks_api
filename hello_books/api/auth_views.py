@@ -7,7 +7,7 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from hello_books import app, jwt
-from hello_books.api.models import HelloBooks
+from hello_books.models import HelloBooks
 
 blacklist = set()
 

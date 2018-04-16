@@ -3,11 +3,25 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token
 )
-from flask_sqlalchemy import SQLAlchemy
-#from flask_migrate import Migrate
 from cerberus import Validator
 import datetime
-from hello_books import db
+from flask_api import FlaskAPI
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate, MigrateCommand
+from flask_script import Manager
+
+app = FlaskAPI(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:test1234@localhost/testdb"
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+manager = Manager(app)
+
+manager.add_command('db', MigrateCommand)
+
+
+
 
 
 class HelloBooks(object):
@@ -200,31 +214,11 @@ class HelloBooks(object):
     """
     END OF BOOK CODE
     """
-"""
-class Books(db.Model):
-    '''Database storage model for books and their functions'''
-
-    __tablename__ = 'books'
-
-    def __init__(self):
-        self.id = book_id
-        self.title = title
-        self.author = author
-        self.date_published = date_published
-        self.genre = genre 
-        self.description = description
-        self.copies = copies
-        self. active = True
 
 
-class User(db.Model):
-    '''database model for users'''
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True, unique=True)
-    email = db.Column(db.String(120), index=True, unique=True)
-    password = db.Column(db.String(128))
 
-    def __repr__(self):
-        return '<User {}>'.format(self.username)
    
-"""
+
+
+if __name__ == '__main__':
+    manager.run()

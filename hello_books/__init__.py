@@ -1,20 +1,10 @@
 '''import dependancies'''
-from config import Config, app_config
 from flask_api import FlaskAPI
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    get_jwt_identity
-)
+from flask_jwt_extended import (JWTManager)
 from flask_sqlalchemy import SQLAlchemy
 from cerberus import Validator
 
 app = FlaskAPI(__name__)
-
-'''Create DB'''
-db = SQLAlchemy(app)
-db.init_app(app)
-'''End of DB code'''
-
 
 '''setup jwt for token encryption'''
 app.config['JWT_SECRET_KEY'] = 'Some-Key'
@@ -30,3 +20,4 @@ from hello_books.api.book_views import books
 '''registering the routes to blueprints'''
 app.register_blueprint(auth)
 app.register_blueprint(books)
+

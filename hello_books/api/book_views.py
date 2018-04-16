@@ -2,7 +2,7 @@
 import datetime
 from flask import jsonify, Blueprint, request, make_response, session
 from hello_books import app
-from hello_books.api.models import HelloBooks
+from hello_books.models import HelloBooks
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
