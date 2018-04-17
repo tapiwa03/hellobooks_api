@@ -93,6 +93,39 @@ class User(db.Model):
             return jsonify(
                 {'message': "Password needs to be 6 characters or more"}) 
 
+    def make_admin(self, my_password, email_of_user, my_mail):
+        if self.check_email_exists(email_of_user) == True:
+            normal_user = User().query.filter_by(email=email_of_user).first()
+            admin_user = User().query.filter_by(email=my_mail).first()
+            if check_password_hash(admin_user.password, my_password) is True:
+                normal_user.is_admin = True
+                db.session.commit()
+                return jsonify(
+                    {'message': "User %s is now an admin." % email_of_user}), 201
+            else:
+                return jsonify({"message": "Your password does not match"}), 401
+        else:
+            return jsonify({"message": "That email does not exist."}), 404
+
+    def authorize(self, my_password, email_of_user, my_mail):
+        if self.check_email_exists(email_of_user) == True:
+            normal_user = User().query.filter_by(email=email_of_user).first()
+            admin_user = User().query.filter_by(email=my_mail).first()
+            if check_password_hash(admin_user.password, my_password) is True:
+                if normal_user.authorized == True:
+                    normal_user.authorized = False
+                    db.session.commit()
+                    return jsonify(
+                        {'message': "User %s is now Deauthorized." % email_of_user}), 201
+                else: 
+                    normal_user.authorized = True
+                    db.session.commit()
+                    return jsonify(
+                        {'message': "User %s is now an Authorized." % email_of_user}), 201
+            else:
+                return jsonify({"message": "Your password does not match"}), 401
+        else:
+            return jsonify({"message": "Email does not exist"}), 404
 
     def view_users(self):
         users = User().query.all()

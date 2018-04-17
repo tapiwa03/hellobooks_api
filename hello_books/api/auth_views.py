@@ -119,4 +119,33 @@ def view_users():
     return User().view_users(), 200
 
 
+@app.route('/api/v1/auth/make-admin', methods=['PUT'])
+@jwt_required
+def make_admin():
+    '''Function for changing a user to an admin'''
+    try:
+        my_email = get_jwt_identity()
+        email_of_user = request.json.get('email_of_user').strip()
+        my_password = request.json.get('password').strip()
+        return User().make_admin(
+            my_password=my_password,
+            email_of_user=email_of_user,
+            my_mail=my_email)
+    except BaseException:
+        return jsonify({"message": "An error occured. Please try again."})
 
+
+@app.route('/api/v1/auth/authorize', methods=['PUT'])
+@jwt_required
+def authorize():
+    '''Function for changing a user to an admin'''
+    try:
+        my_email = get_jwt_identity()
+        email_of_user = request.json.get('email_of_user').strip()
+        my_password = request.json.get('password').strip()
+        return User().authorize(
+            my_password=my_password,
+            email_of_user=email_of_user,
+            my_mail=my_email)
+    except BaseException:
+        return jsonify({"message": "An error occured. Please try again."})
