@@ -43,27 +43,29 @@ def reset_password():
 @app.route('/api/v1/auth/register', methods=['POST'])
 def register():
     '''Fuction to register a new user'''
-    
-    sent_data = request.get_json(force=True)
-    raw_data = {
-        'name': sent_data['name'],
-        'email': sent_data['email'],
-        'password': sent_data['password']
-    }
-    data = {k.strip(): v.strip() for k, v in raw_data.items()}
-    if User().check_email_exists(data['email']) == True:
-        return jsonify({'message': 'Email Exists'})
-    else:
-        if hello_books.user_data_validation(data) == True:
-            new_user = User(
-                username = data['name'],
-                email=data['email'],
-                password=User().hash_password(data['password']))
-            User().save(new_user)
-            return jsonify({'message': 'Registered Successfully.'}), 201
+    try:
+        sent_data = request.get_json(force=True)
+        raw_data = {
+            'name': sent_data['name'],
+            'email': sent_data['email'],
+            'password': sent_data['password']
+        }
+        data = {k.strip(): v.strip() for k, v in raw_data.items()}
+        if User().check_email_exists(data['email']) == True:
+            return jsonify({'message': 'Email Exists'})
         else:
-            return jsonify(
-                {'message': 'Please enter all the data in the correct format.'})
+            if hello_books.user_data_validation(data) == True:
+                new_user = User(
+                    username = data['name'],
+                    email=data['email'],
+                    password=User().hash_password(data['password']))
+                User().save(new_user)
+                return jsonify({'message': 'Registered Successfully.'}), 201
+            else:
+                return jsonify(
+                    {'message': 'Please enter all the data in the correct format.'})
+    except BaseException:
+        return jsonify({"message": "An error occured. Please try again."})
 
 
 @app.route('/api/v1/auth/login', methods=['POST'])
@@ -106,12 +108,15 @@ def change_password():
             old_password=old_password,
             new_password=new_password,
             mail=email)
-    except:
+    except BaseException:
         return jsonify({"message": "An error occured. Please try again."})
 
-@app.route('/api/v1/auth/users')
+
+@app.route('/api/v1/auth/users', methods=['GET'])
 @jwt_required
 def view_users():
     '''Function for viewing all books'''
-    return hello_books.view_users(), 200
+    return User().view_users(), 200
+
+
 

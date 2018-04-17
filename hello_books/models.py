@@ -32,7 +32,7 @@ class User(db.Model):
     email = db.Column(db.String(60), index=True, unique=True)
     password = db.Column(db.String(256))
     is_admin = db.Column(db.Boolean, default=False)
-    authorized = db.Column(db.Boolean, default=False)
+    authorized = db.Column(db.Boolean, default=True)
 
     def save(self, data):
         db.session.add(data)
@@ -57,13 +57,18 @@ class User(db.Model):
         if self.check_email_exists(mail) == False:
             return jsonify({'message': 'Email does not exist.'})
         elif self.check_email_exists(mail) == True:
-            if check_password_hash(user.password, password) is True:
-                access_token = create_access_token(identity=mail)
-                return jsonify(access_token=access_token), 200
+            if user.authorized == True:
+                if check_password_hash(user.password, password) is True:
+                    access_token = create_access_token(identity=mail)
+                    return jsonify(access_token=access_token), 200
+                else:
+                    return jsonify({'message': 'Incorrect Password.'}), 401
             else:
-                return jsonify({'message': 'Incorrect Password.'}), 401
+                return jsonify(
+                    {"message": "Your account has been deactivated. Please contact a library admin."})
         else:
-            return jsonify({'message': 'Details match no record. Would you like to register?'})
+            return jsonify(
+                {'message': 'Details match no record. Would you like to register?'})
 
     def reset_password(self, mail):
         try:
@@ -87,6 +92,20 @@ class User(db.Model):
         else:
             return jsonify(
                 {'message': "Password needs to be 6 characters or more"}) 
+
+
+    def view_users(self):
+        users = User().query.all()
+        userlist = []
+        for item in users:
+            user = {
+                "username": item.username,
+                "email": item.email,
+                "is_admin": item.is_admin,
+                "authorized": item.authorized
+            }
+            userlist.append(user)
+        return jsonify(userlist)
 
 
 class Books(db.Model):
@@ -180,8 +199,7 @@ class HelloBooks(object):
 
     
 
-    def view_users(self):
-        return jsonify(self.users_list)
+    
     """
     END OF AUTH CODE
     """

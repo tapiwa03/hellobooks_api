@@ -132,6 +132,61 @@ class TestAuth(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(borrow.status_code, 201)
 
+
+    def test_view_users(self):
+        '''Test if an admin can view all users'''
+        result = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'john@mail.com',
+            'password': 'John2018'
+        }))
+        token = json.loads(result.data)
+        access_token = token['access_token']
+        view = self.app.get(
+            '/api/v1/auth/users',
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)},
+            content_type='application/json')
+        self.assertEqual(view.status_code, 200)
+
+
+    def test_make_admin(self):
+        '''Test that an admin can change another user to an admin'''
+        login = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
+        }))
+        self.assertEqual(login.status_code, 200)
+        login_msg = json.loads(login.data)
+        access_token = login_msg['access_token']
+        result = self.app.put(
+            '/api/v1/auth/make-admin',
+            data=json.dumps({
+                'password': 'John2018',
+                'email': 'jane@mail.com'
+            }),
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)})
+        self.assertEqual(result.status_code, 201)
+
+    def test_authorize_user(self):
+        '''Test if an admin can authorize or deauthorize a user'''
+        login = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
+        }))
+        self.assertEqual(login.status_code, 200)
+        login_msg = json.loads(login.data)
+        access_token = login_msg['access_token']
+        auth = self.app.put(
+            '/api/v1/auth/authorize',
+            data=json.dumps({
+                'password': 'John2018',
+                'email': 'jane@mail.com'
+            }),
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)})
+        self.assertEqual(auth.status_code, 201)
+
     def tearDown(self):
         # Teardown Initialized variables
         pass
