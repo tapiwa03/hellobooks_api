@@ -1,10 +1,10 @@
 '''import dependancies'''
 from flask_api import FlaskAPI
 from flask_jwt_extended import (JWTManager)
-from flask_sqlalchemy import SQLAlchemy
 from cerberus import Validator
 
 app = FlaskAPI(__name__)
+
 
 '''setup jwt for token encryption'''
 app.config['JWT_SECRET_KEY'] = 'Some-Key'

@@ -58,14 +58,15 @@ def register():
                 new_user = User(
                     username = data['name'],
                     email=data['email'],
-                    password=User().hash_password(data['password']))
+                    password=User().hash_password(data['password']),
+                    date_created=datetime.datetime.now())
                 User().save(new_user)
                 return jsonify({'message': 'Registered Successfully.'}), 201
             else:
                 return jsonify(
                     {'message': 'Please enter all the data in the correct format.'})
     except BaseException:
-        return jsonify({"message": "An error occured. Please try again."})
+        return jsonify({"message": "An error occured. Please try again."}), 500
 
 
 @app.route('/api/v1/auth/login', methods=['POST'])

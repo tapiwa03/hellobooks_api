@@ -13,6 +13,7 @@ from . import app
 
 
 '''Database setup'''
+
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:test1234@localhost/testdb"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -33,14 +34,13 @@ class User(db.Model):
     password = db.Column(db.String(256))
     is_admin = db.Column(db.Boolean, default=False)
     authorized = db.Column(db.Boolean, default=True)
+    date_created = db.Column(db.DateTime)
+    date_modified = db.Column(db.DateTime)
 
     def save(self, data):
         db.session.add(data)
         db.session.commit()
 
-    def delete(self, data):
-        db.session.delete(data)
-        db.session.commit()
 
     def hash_password(self, data):
          return generate_password_hash(data)
@@ -74,6 +74,7 @@ class User(db.Model):
         try:
             user = User().query.filter_by(email=mail).first()
             user.password = User().hash_password('Pass123')
+            user.date_modified = datetime.datetime.now()
             db.session.commit()
             return True
         except:
@@ -84,6 +85,7 @@ class User(db.Model):
         if HelloBooks().password_validation({"password": new_password}) == True:
             if check_password_hash(user.password, old_password) is True:
                 user.password = self.hash_password(new_password)
+                user.date_modified = datetime.datetime.now()
                 db.session.commit()
                 return jsonify(
                     {'message': "Password has been changed"}), 201
@@ -99,6 +101,7 @@ class User(db.Model):
             admin_user = User().query.filter_by(email=my_mail).first()
             if check_password_hash(admin_user.password, my_password) is True:
                 normal_user.is_admin = True
+                normal_user.date_modified = datetime.datetime.now()
                 db.session.commit()
                 return jsonify(
                     {'message': "User %s is now an admin." % email_of_user}), 201
@@ -114,11 +117,13 @@ class User(db.Model):
             if check_password_hash(admin_user.password, my_password) is True:
                 if normal_user.authorized == True:
                     normal_user.authorized = False
+                    normal_user.date_modified = datetime.datetime.now()
                     db.session.commit()
                     return jsonify(
                         {'message': "User %s is now Deauthorized." % email_of_user}), 201
                 else: 
                     normal_user.authorized = True
+                    normal_user.date_modified = datetime.datetime.now()
                     db.session.commit()
                     return jsonify(
                         {'message': "User %s is now an Authorized." % email_of_user}), 201
@@ -129,7 +134,7 @@ class User(db.Model):
 
     def view_users(self):
         users = User().query.all()
-        userlist = []
+        user_list = []
         for item in users:
             user = {
                 "username": item.username,
@@ -137,7 +142,7 @@ class User(db.Model):
                 "is_admin": item.is_admin,
                 "authorized": item.authorized
             }
-            userlist.append(user)
+            user_list.append(user)
         return jsonify(userlist)
 
 
@@ -149,26 +154,69 @@ class Books(db.Model):
     title = db.Column(db.String(60), unique=True)
     author = db.Column(db.String(60))
     date_published = db.Column(db.String(60))
-    genre = db.Column(db.String(20), unique=True)
+    genre = db.Column(db.String(20))
     description = db.Column(db.String(200))
-    copies = db.Column(db.Integer)
+    copies = db.Column(db.Integer, default=1)
     isbn = db.Column(db.Integer, unique=True, index=True)
+    date_created = db.Column(db.DateTime)
+    date_modified = db.Column(db.DateTime)
 
-    def __init__(self, title, author, date_published, genre, description, copies, isbn):
-        self.title = title
-        self.author = author
-        self.date_published = date_published
-        self.genre = genre
-        self.description = description
-        self.copies = copies
-        self.isbn = isbn
+    def save(self, data):
+        db.session.add(data)
+        db.session.commit()
+
+    def delete(self, data):
+        db.session.delete(data)
+        db.session.commit()
 
     @staticmethod
     def get_by_id(book_id):
-        return Books.query.get(book_id)
+        '''Function for retriving a book by its Id'''
+        book = Books().query.filter_by(id=book_id).first()
+        return book
+
     @staticmethod    
     def get_all():
-        return Books.query.all()
+        '''Function for retrieving all users'''
+        books = Books().query.all()
+        books_list = []
+        for item in books:
+            book = {
+                "title": item.title,
+                "author": item.author,
+                "date_published": item.date_published,
+                "genre": item.genre,
+                "description": item.description,
+                "copies": item.copies,
+                "isbn": item.isbn,
+            }
+            books_list.append(book)
+        return jsonify(books_list)
+
+    def add_book(self, title, author, date_published, genre, description, isbn, copies, date_created):
+        '''Function for adding a user'''
+        try:
+            if Books().query.filter_by(isbn=isbn).count() != 0:
+                existing_book = Books().query.filter_by(isbn=isbn).first()
+                existing_book.copies += 1
+                db.session.commit()
+                return jsonify({'message': 'Book exists, copies incremented by 1.'}),201
+            else:
+                new_book = Books(
+                    title=title,
+                    author=author,
+                    date_published=date_published,
+                    genre=genre,
+                    description=description,
+                    isbn=isbn,
+                    copies=copies,
+                    date_created=date_created)
+                self.save(new_book)
+                return jsonify(
+                    {"message": "%s by %s has been added to library" % (title, author)})
+        except BaseException:
+           return jsonify({"message": "An error has occured."})
+
 
 
 
@@ -183,9 +231,6 @@ class HelloBooks(object):
     """
     HELPER METHODS FOR USER VIEWS
     """
-
-    
-
     
 
     def user_data_validation(self, dict_data):
@@ -281,8 +326,15 @@ class HelloBooks(object):
                 'required': True,
                 'regex': '^[a-zA-Z0-9 ]+$',
                 'empty': True,
-                'maxlength': 10,
+                'maxlength': 20,
                 'minlength': 4},
+            'isbn': {
+                'type': 'string',
+                'required': True,
+                'regex': '^[0-9]+$',
+                'empty': False,
+                'maxlength': 13,
+                'minlength': 13},
             'description': {
                 'type': 'string',
                 'required': True,
@@ -314,7 +366,7 @@ class HelloBooks(object):
                 'required': False,
                 'regex': '^[a-zA-Z0-9 ]+$',
                 'empty': True,
-                'maxlength': 10,
+                'maxlength': 20,
                 'minlength': 4},
             'description': {
                 'type': 'string',

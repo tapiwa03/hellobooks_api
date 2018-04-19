@@ -2,7 +2,7 @@
 import datetime
 from flask import jsonify, Blueprint, request, make_response, session
 from hello_books import app
-from hello_books.models import HelloBooks
+from hello_books.models import HelloBooks, Books
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
@@ -23,6 +23,7 @@ def check_if_token_in_blacklist(decrypted_token):
 
 books = Blueprint('books', __name__)
 hello_books = HelloBooks()
+
 
 
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
@@ -91,22 +92,22 @@ def add_book():
         'author': sent_data.get('author'),
         'date_published': sent_data.get('date_published'),
         'genre': sent_data.get('genre'),
-        'description': sent_data.get('description')
+        'description': sent_data.get('description'),
+        'isbn': sent_data.get('isbn'),
+        'copies': sent_data.get('copies')
     }
-    data = {k.strip() : v.strip() for k, v in raw_data.items()}
+    data = {k : v.strip() for k, v in raw_data.items()}
     if HelloBooks().add_book_validation(data) == True:
-        hello_books.add_book(data)
-        response = jsonify({
-            'book_id': data['book_id'],
-            'title': data['title'],
-            'author': data['author'],
-            'date_published': data['date_published'],
-            'genre': data['genre'],
-            'description': data['description'],
-            'available': True
-        })
-        response.status_code = 201
-        return response
+        return Books().add_book(
+            title=data['title'],
+            author=data['author'],
+            date_published=data['date_published'],
+            genre=data['genre'],
+            description=data['description'],
+            isbn=data['isbn'],
+            copies=data['copies'],
+            date_created=datetime.datetime.now()
+        )
     else:
         return jsonify({"message": "Please enter correct book details"})
 
@@ -161,13 +162,10 @@ def delete_book(id):
 @app.route('/api/v1/books', methods=['GET'])
 def get_all_books():
     '''function to get all books'''
-    return hello_books.view_books(), 200
+    return Books().get_all()
 
 
 @app.route('/api/v1/books/<int:id>', methods=['GET'])
 def get_by_id(id):
     '''function to get a single book by its id'''
-    book = [book for book in hello_books.books_list if book['book_id'] == id]
-    if len(book) == 0:
-        return jsonify({'message': "Book Doesnt Exist"}), 404
-    return jsonify({'book': book[0]}), 200
+    return Books().get_by_id(id)
