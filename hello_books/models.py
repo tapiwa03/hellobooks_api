@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request, Flask
+from flask import jsonify, Blueprint, request, Flask, json
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token
@@ -147,6 +147,7 @@ class User(db.Model):
 
 
 class Books(db.Model):
+    '''Class containing book functions'''
     
     
     __tablename__ = 'books'
@@ -162,18 +163,29 @@ class Books(db.Model):
     date_modified = db.Column(db.DateTime)
 
     def save(self, data):
+        '''Save/add a book'''
         db.session.add(data)
         db.session.commit()
 
-    def delete(self, data):
-        db.session.delete(data)
-        db.session.commit()
+    @staticmethod
+    def delete(id):
+        '''delete a book'''
+        if Books().query.filter_by(id=book_id).count() == 0:
+            return jsonify({"message": "Book does not exist"}), 404
+        else:
+            book = Books().query.filter_by(id=book_id).first()
+            db.session.delete(book)
+            db.session.commit()
+            return jsonify({"message": "Successfully deleted."}), 200
 
     @staticmethod
     def get_by_id(book_id):
         '''Function for retriving a book by its Id'''
-        book = Books().query.filter_by(id=book_id).first()
-        return book
+        if Books().query.filter_by(id=book_id).count() == 0:
+            return False
+        else:
+            book = Books().query.filter_by(id=book_id).first()
+            return jsonify(book), 200
 
     @staticmethod    
     def get_all():
@@ -191,7 +203,7 @@ class Books(db.Model):
                 "isbn": item.isbn,
             }
             books_list.append(book)
-        return jsonify(books_list)
+        return jsonify(books_list), 200
 
     def add_book(self, title, author, date_published, genre, description, isbn, copies, date_created):
         '''Function for adding a user'''
@@ -217,6 +229,62 @@ class Books(db.Model):
         except BaseException:
            return jsonify({"message": "An error has occured."})
 
+    def edit_book(self, title, book_id, author, date_published, genre, description, copies, isbn):
+        '''Function for editing a book'''
+        book = Books().query.filter_by(id=book_id).first()
+        '''Check if title is entered and if it is correct'''
+        try:            
+            if title is not None:
+                if HelloBooks().edit_book_validation({'title': title}) == True:
+                    book.title = title
+                else:
+                    return jsonify(
+                        {'message': 'Please enter a correct title above 4 characters'})
+            '''check if author is entered and if it is correct'''
+            if author is not None:
+                if HelloBooks().edit_book_validation({'author': author}) == True:
+                    book.author = author
+                else:
+                    return jsonify(
+                        {'message': 'Please enter a correct author above 4 characters'})
+            '''check if date is correctly entered'''
+            if date_published is not None:
+                if HelloBooks().date_validate(date_published) == True:
+                    book.date_published = date_published
+                else:
+                    return jsonify(
+                        {'message': 'Please enter a correct date format DD-MM-YYYY'})
+            '''check if genre is entered correctly'''
+            if genre in request.json:
+                if HelloBooks().edit_book_validation({'genre': genre}) == True:
+                    book.genre = genre
+                else:
+                    return jsonify(
+                        {"message": "Please enter a genre between 4-10 characters"})
+            '''check if description entered correctly'''
+            if description is not None:
+                if HelloBooks().edit_book_validation({'description': description}) == True:
+                    book.description = description
+                else:
+                    return jsonify(
+                        {'message': "Description should be between 4-200 characters"})
+            if copies is not None:
+                if HelloBooks().edit_book_validation({'copies': copies}) == True:
+                    book.copies = copies
+                else:
+                    return jsonify(
+                        {"message": "Please enter an integer for copies"})
+            if isbn is not None:
+                if HelloBooks().edit_book_validation({'genre': isbn}) == True:
+                    book.isbn = isbn
+                else:
+                    return jsonify(
+                        {"message": "Please enter a 13 digit ISBN."})
+            book.date_modified = datetime.datetime.now()
+            db.session.commit()
+            return jsonify({"message": "Successfully edited %s" % book.title}), 201
+        except:
+            return jsonify({"message": "Error with data validation"})
 
 
 
@@ -368,6 +436,20 @@ class HelloBooks(object):
                 'empty': True,
                 'maxlength': 20,
                 'minlength': 4},
+            'copies': {
+                'type': 'string',
+                'required': False,
+                'regex': '^[0-9]+$',
+                'empty': False,
+                'maxlength': 1,
+                'minlength': 3},
+            'isbn': {
+                'type': 'string',
+                'required': False,
+                'regex': '^[0-9]+$',
+                'empty': False,
+                'maxlength': 13,
+                'minlength': 13},
             'description': {
                 'type': 'string',
                 'required': False,

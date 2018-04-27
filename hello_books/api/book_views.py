@@ -30,58 +30,35 @@ hello_books = HelloBooks()
 @jwt_required
 def edit_book(id):
     '''Function for editing book info'''
-    book = [book for book in hello_books.books_list if book['book_id'] == id]
-    if len(book) == 0:
-        return jsonify({'message': "Book Doesn't Exist"})
+
+    if Books().get_by_id(id) == False:
+        return jsonify({'message': "Book Doesn't Exist"}), 404
     if not request.json:
         return jsonify({'message': "No data entered"}), 204
-    '''Check if title is entered and if it is correct'''
-    if 'title' in request.json:
-        title = request.json['title'].strip()
-        if hello_books.edit_book_validation({'title': title}) == True:
-            book[0]['title'] = title
-        else:
-            return jsonify(
-                {'message': 'Please enter a correct title above 4 characters'})
-    '''check if author is entered and if it is correct'''
-    if 'author' in request.json:
-        author = request.json['author'].strip()
-        if hello_books.edit_book_validation({'author': author}) == True:
-            book[0]['author'] = author
-        else:
-            return jsonify(
-                {'message': 'Please enter a correct author above 4 characters'})
-    '''check if date is correctly entered'''
-    if 'date_published' in request.json:
-        date = request.json['date_published'].strip()
-        if hello_books.date_validate(date) == True:
-            book[0]['date_published'] = date
-        else:
-            return jsonify(
-                {'message': 'Please enter a correct date format DD-MM-YYYY'})
-    '''check if genre is entered correctly'''
-    if 'genre' in request.json:
-        genre = request.json['genre'].strip()
-        if hello_books.edit_book_validation({'genre': genre}) == True:
-            book[0]['genre'] = genre
-        else:
-            return jsonify(
-                {"message": "Please enter a genre between 4-10 characters"})
-    '''check if description entered correctly'''
-    if 'description' in request.json:
-        description = request.json['description'].strip()
-        if hello_books.edit_book_validation(
-                {'description': description}) == True:
-            book[0]['description'] = description
-        else:
-            return jsonify(
-                {'message': "Description should be between 4-200 characters"})
-    if hello_books.edit_book_validation(book[0]) == True:
-        return jsonify({'book': book[0]})
     else:
-        return jsonify({"message": "Please enter book data correctly"})
+        sent_data = request.get_json(force=True)
+        book_data = {
+            "title": sent_data.get('title'),
+            "author": sent_data.get('author'),
+            "date_published": sent_data.get('date_published'),
+            "genre": sent_data.get('genre'),
+            "description": sent_data.get('description'),
+            "copies": sent_data.get('copies'),
+            "isbn": sent_data.get('isbn')
+        }
+        return Books().edit_book(
+            title=book_data['title'],
+            book_id=id,
+            author=book_data['title'],
+            date_published=book_data['date_published'],
+            genre=book_data['genre'],
+            description=book_data['description'],
+            copies=book_data['copies'],
+            isbn=book_data['isbn']
+            )
 
 
+        
 @app.route('/api/v1/books', methods=['POST'])
 @jwt_required
 def add_book():
@@ -152,11 +129,7 @@ def borrow_book(id):
 @jwt_required
 def delete_book(id):
     '''function to delete book'''
-    book = [book for book in hello_books.books_list if book['book_id'] == id]
-    if len(book) == 0:
-        return jsonify({'message': "Book Doesnt Exist"})
-    hello_books.books_list.remove(book[0])
-    return jsonify({'message': "Book Was Deleted"})
+    return Books().delete(id)
 
 
 @app.route('/api/v1/books', methods=['GET'])
@@ -168,4 +141,7 @@ def get_all_books():
 @app.route('/api/v1/books/<int:id>', methods=['GET'])
 def get_by_id(id):
     '''function to get a single book by its id'''
-    return Books().get_by_id(id)
+    if Books().get_by_id(id) == False:
+        return jsonify({"message": "Book does not exist"}), 404
+    else:
+        return Books().get_by_id(id), 200
