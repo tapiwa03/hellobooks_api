@@ -143,7 +143,7 @@ class User(db.Model):
                 "authorized": item.authorized
             }
             user_list.append(user)
-        return jsonify(userlist)
+        return jsonify(user_list)
 
 
 class Books(db.Model):
@@ -152,13 +152,13 @@ class Books(db.Model):
     
     __tablename__ = 'books'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(60), unique=True)
+    title = db.Column(db.String(60))
     author = db.Column(db.String(60))
     date_published = db.Column(db.String(60))
     genre = db.Column(db.String(20))
     description = db.Column(db.String(200))
     copies = db.Column(db.Integer, default=1)
-    isbn = db.Column(db.Integer, unique=True, index=True)
+    isbn = db.Column(db.String(15), unique=True, index=True)
     date_created = db.Column(db.DateTime)
     date_modified = db.Column(db.DateTime)
 
@@ -207,85 +207,82 @@ class Books(db.Model):
 
     def add_book(self, title, author, date_published, genre, description, isbn, copies, date_created):
         '''Function for adding a user'''
-        try:
-            if Books().query.filter_by(isbn=isbn).count() != 0:
-                existing_book = Books().query.filter_by(isbn=isbn).first()
-                existing_book.copies += 1
-                db.session.commit()
-                return jsonify({'message': 'Book exists, copies incremented by 1.'}),201
-            else:
-                new_book = Books(
-                    title=title,
-                    author=author,
-                    date_published=date_published,
-                    genre=genre,
-                    description=description,
-                    isbn=isbn,
-                    copies=copies,
-                    date_created=date_created)
-                self.save(new_book)
-                return jsonify(
-                    {"message": "%s by %s has been added to library" % (title, author)})
-        except BaseException:
-           return jsonify({"message": "An error has occured."})
-
-    def edit_book(self, title, book_id, author, date_published, genre, description, copies, isbn):
-        '''Function for editing a book'''
-        book = Books().query.filter_by(id=book_id).first()
-        '''Check if title is entered and if it is correct'''
-        try:            
-            if title is not None:
-                if HelloBooks().edit_book_validation({'title': title}) == True:
-                    book.title = title
-                else:
-                    return jsonify(
-                        {'message': 'Please enter a correct title above 4 characters'})
-            '''check if author is entered and if it is correct'''
-            if author is not None:
-                if HelloBooks().edit_book_validation({'author': author}) == True:
-                    book.author = author
-                else:
-                    return jsonify(
-                        {'message': 'Please enter a correct author above 4 characters'})
-            '''check if date is correctly entered'''
-            if date_published is not None:
-                if HelloBooks().date_validate(date_published) == True:
-                    book.date_published = date_published
-                else:
-                    return jsonify(
-                        {'message': 'Please enter a correct date format DD-MM-YYYY'})
-            '''check if genre is entered correctly'''
-            if genre in request.json:
-                if HelloBooks().edit_book_validation({'genre': genre}) == True:
-                    book.genre = genre
-                else:
-                    return jsonify(
-                        {"message": "Please enter a genre between 4-10 characters"})
-            '''check if description entered correctly'''
-            if description is not None:
-                if HelloBooks().edit_book_validation({'description': description}) == True:
-                    book.description = description
-                else:
-                    return jsonify(
-                        {'message': "Description should be between 4-200 characters"})
-            if copies is not None:
-                if HelloBooks().edit_book_validation({'copies': copies}) == True:
-                    book.copies = copies
-                else:
-                    return jsonify(
-                        {"message": "Please enter an integer for copies"})
-            if isbn is not None:
-                if HelloBooks().edit_book_validation({'genre': isbn}) == True:
-                    book.isbn = isbn
-                else:
-                    return jsonify(
-                        {"message": "Please enter a 13 digit ISBN."})
-            book.date_modified = datetime.datetime.now()
+        if Books().query.filter_by(isbn=isbn).count() != 0:
+            existing_book = Books().query.filter_by(isbn=isbn).first()
+            existing_book.copies += 1
             db.session.commit()
-            return jsonify({"message": "Successfully edited %s" % book.title}), 201
-        except:
-            return jsonify({"message": "Error with data validation"})
-
+            return jsonify({'message': 'Book exists, copies incremented by 1.'}),201
+        else:
+            new_book = Books(
+                title=title,
+                author=author,
+                date_published=date_published,
+                genre=genre,
+                description=description,
+                isbn=isbn,
+                copies=copies,
+                date_created=date_created)
+            self.save(new_book)
+            return jsonify(
+                {"message": "%s by %s has been added to library" % (title, author)})
+        
+    @staticmethod
+    def edit_book(title, book_id, author, date_published, genre, description, copies, isbn):
+        '''Function for editing a book'''
+        if Books().query.filter_by(id=book_id).count() == 0:
+            return jsonify({"message": 'Book not found'})
+        book = Books().query.filter_by(id=book_id).first()
+        '''Check if title is entered and if it is correct'''      
+        if title is not None:
+            if HelloBooks().edit_book_validation({'title': title}) == True:
+                book.title = title
+            else:
+                return jsonify(
+                    {'message': 'Please enter a correct title above 4 characters'})
+        '''check if author is entered and if it is correct'''
+        if author is not None:
+            if HelloBooks().edit_book_validation({'author': author}) == True:
+                book.author = author
+            else:
+                return jsonify(
+                    {'message': 'Please enter a correct author above 4 characters'})
+        '''check if date is correctly entered'''
+        if date_published is not None:
+            if HelloBooks().date_validate(date_published) == True:
+                book.date_published = date_published
+            else:
+                return jsonify(
+                    {'message': 'Please enter a correct date format DD-MM-YYYY'})
+        '''check if genre is entered correctly'''
+        if genre in request.json:
+            if HelloBooks().edit_book_validation({'genre': genre}) == True:
+                book.genre = genre
+            else:
+                return jsonify(
+                    {"message": "Please enter a genre between 4-10 characters"})
+        '''check if description entered correctly'''
+        if description is not None:
+            if HelloBooks().edit_book_validation({'description': description}) == True:
+                book.description = description
+            else:
+                return jsonify(
+                    {'message': "Description should be between 4-200 characters"})
+        if copies is not None:
+            if HelloBooks().edit_book_validation({'copies': copies}) == True:
+                book.copies = copies
+            else:
+                return jsonify(
+                    {"message": "Please enter an integer for copies"})
+        if isbn is not None:
+            if HelloBooks().edit_book_validation({'genre': isbn}) == True:
+                book.isbn = isbn
+            else:
+                return jsonify(
+                    {"message": "Please enter a 13 digit ISBN."})
+        book.date_modified = datetime.datetime.now()
+        db.session.commit()
+        return jsonify({"message": "Successfully edited %s" % book.title}), 201
+    
 
 
 class HelloBooks(object):

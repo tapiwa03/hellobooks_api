@@ -30,35 +30,53 @@ hello_books = HelloBooks()
 @jwt_required
 def edit_book(id):
     '''Function for editing book info'''
-
-    if Books().get_by_id(id) == False:
-        return jsonify({'message': "Book Doesn't Exist"}), 404
-    if not request.json:
-        return jsonify({'message': "No data entered"}), 204
+    if len(request.json) == 0:
+        return jsonify({'message': "No data entered"})        
+    if 'title' in request.json:
+        title = request.json['title']
     else:
-        sent_data = request.get_json(force=True)
-        book_data = {
-            "title": sent_data.get('title'),
-            "author": sent_data.get('author'),
-            "date_published": sent_data.get('date_published'),
-            "genre": sent_data.get('genre'),
-            "description": sent_data.get('description'),
-            "copies": sent_data.get('copies'),
-            "isbn": sent_data.get('isbn')
-        }
-        return Books().edit_book(
-            title=book_data['title'],
-            book_id=id,
-            author=book_data['title'],
-            date_published=book_data['date_published'],
-            genre=book_data['genre'],
-            description=book_data['description'],
-            copies=book_data['copies'],
-            isbn=book_data['isbn']
-            )
+        title = None
+    
+    if 'author' in request.json:
+        author = request.json['author']
+    else:
+        author = None
+    
+    if 'date_published' in request.json:
+        date_published = request.json['date_published']
+    else:
+        date_published = None
 
+    if 'genre' in request.json:
+        genre = request.json['genre']
+    else:
+        genre = None
+    
+    if 'description' in request.json:
+        description = request.json['description']
+    else:
+        description = None
 
-        
+    if 'isbn' in request.json:
+        isbn = request.json['isbn']
+    else:
+        isbn = None
+
+    if 'copies' in request.json:
+        copies = request.json['copies']
+    else:
+        copies = None
+    return Books().edit_book(
+        title=title,
+        author=author,
+        date_published=date_published,
+        genre=genre,
+        description=description,
+        isbn=isbn,
+        copies=copies,
+        book_id=id
+    )
+    
 @app.route('/api/v1/books', methods=['POST'])
 @jwt_required
 def add_book():
