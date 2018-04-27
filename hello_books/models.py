@@ -9,7 +9,7 @@ from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
-from . import app
+app = FlaskAPI(__name__)
 
 
 '''Database setup'''
@@ -170,10 +170,10 @@ class Books(db.Model):
     @staticmethod
     def delete(id):
         '''delete a book'''
-        if Books().query.filter_by(id=book_id).count() == 0:
+        if Books().query.filter_by(id=id).count() == 0:
             return jsonify({"message": "Book does not exist"}), 404
         else:
-            book = Books().query.filter_by(id=book_id).first()
+            book = Books().query.filter_by(id=id).first()
             db.session.delete(book)
             db.session.commit()
             return jsonify({"message": "Successfully deleted."}), 200
@@ -284,19 +284,24 @@ class Books(db.Model):
         return jsonify({"message": "Successfully edited %s" % book.title}), 201
     
 
+class Borrow(db.Model):
+    '''Class for borrowing books'''
+
+    __tablename__ = 'borrow'
+    id = db.Column(db.Integer, primary_key=True)
+    user_email = db.Column(db.String(60))
+    borrow_date = db.Column(db.String(11))
+    due_date = db.Column(db.String(11))
+    book_id = db.Column(db.String(20))
+    date_returned = db.Column(db.String(200))
+    copies = db.Column(db.Integer, default=1)
+
+
+
 
 class HelloBooks(object):
+    '''Class for data validation'''
 
-    def __init__(self):
-        '''creating a list containing dictionaries to act as a database'''
-        self.users_list = []
-        self.books_list = []
-        self.borrow_details = []
-
-    """
-    HELPER METHODS FOR USER VIEWS
-    """
-    
 
     def user_data_validation(self, dict_data):
         '''user data validation method'''
@@ -332,42 +337,10 @@ class HelloBooks(object):
         v.allow_unknown = True
         return v.validate(dict_data)
 
-    """
-    END OF USER HELPER METHODS
-    """
-    """
-    Code for user methods that are imported into auth_views.py
-    """
-
-
-    
-
-    
-    """
-    END OF AUTH CODE
-    """
-
-    """
-    CODE FOR BOOKS
-    """
-
-    def add_book(self, data):
-        data['book_id'] = len(self.books_list) + 1
-        data['available'] = True
-        self.books_list.append(data)
-        return jsonify({'message': 'Book Added'})
-
-    def view_books(self):
-        return jsonify(self.books_list)
-
     def borrow_book(self, data):
         self.borrow_details.append(data)
         response = jsonify({'message': "You have borrowed this book"})
         return response
-
-    """
-    VALIDATION FOR BOOK DATA
-    """
 
     def add_book_validation(self, dict_data):
         '''book data validation function'''
@@ -462,14 +435,6 @@ class HelloBooks(object):
             return True
         except BaseException:
             return False
-
-    """
-    END OF BOOK CODE
-    """
-
-
-
-   
 
 
 if __name__ == '__main__':
