@@ -7,6 +7,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from cerberus import Validator
+import datetime
 
 
 
@@ -116,6 +117,64 @@ class TestAuth(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(borrow.status_code, 201)
 
+    def test_books_not_returned(self):
+        '''test to view which books have not been returned by the borrower'''
+        result = self.app.post('/api/v1/auth/register', data=self.user_data2)
+        self.assertEqual(result.status_code, 201)
+        login = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
+        }))
+        self.assertEqual(login.status_code, 200)
+        login_msg = json.loads(login.data)
+        access_token = login_msg['access_token']
+        check_books = self.app.get(
+            '/api/v1/users/books?returned=false',
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)},
+            content_type='application/json')
+        self.assertEqual(check_books.status_code, 200)
+
+
+    def test_borrow_history(self):
+        '''test to see if a user can retrieve their borrowing history'''
+        result = self.app.post('/api/v1/auth/register', data=self.user_data2)
+        self.assertEqual(result.status_code, 201)
+        login = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
+        }))
+        self.assertEqual(login.status_code, 200)
+        login_msg = json.loads(login.data)
+        access_token = login_msg['access_token']
+        history = self.app.get(
+            '/api/v1/users/books',
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)},
+            content_type='application/json')
+        self.assertEqual(history.status_code, 200)
+
+
+    def test_return_book(self):
+        '''test to return a borrowed books'''
+        result = self.app.post('/api/v1/auth/register', data=self.user_data2)
+        self.assertEqual(result.status_code, 201)
+        login = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'jane@mail.com',
+            'password': 'Jane2018'
+        }))
+        self.assertEqual(login.status_code, 200)
+        login_msg = json.loads(login.data)
+        access_token = login_msg['access_token']
+        return_date = datetime.datetime.today().strftime('%d/%m/%Y')
+        return_book = self.app.put(
+            '/api/v1/users/books/1',
+            data=json.dumps(return_date),
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)},
+            content_type='application/json')
+        self.assertEqual(return_book.status_code, 201)
+
 
     def test_view_users(self):
         '''Test if an admin can view all users'''
@@ -186,7 +245,7 @@ class TestAuth(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
         self.assertIn(b"You are now logged out", res.data)
-        
+
 
     def tearDown(self):
         # Teardown Initialized variables
