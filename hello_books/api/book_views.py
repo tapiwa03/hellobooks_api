@@ -2,7 +2,7 @@
 import datetime
 from flask import jsonify, Blueprint, request, make_response, session
 from hello_books import app
-from hello_books.models import HelloBooks, Books
+from hello_books.models import HelloBooks, Books, Borrow
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
@@ -107,40 +107,21 @@ def add_book():
         return jsonify({"message": "Please enter correct book details"})
 
 
-# check if users is correct
+
 @app.route('/api/v1/users/books/<int:id>', methods=['POST', 'GET', 'PUT'])
 @jwt_required
 def borrow_book(id):
     '''function to retrieve current date'''
-    now = datetime.datetime.now()
     email = get_jwt_identity()
-    book = [book for book in hello_books.books_list if book['book_id'] == id]
-    # add data to dictionary
+    now = datetime.datetime.now()
     sent_data = request.get_json(force=True)
-    data = {
-        'book_id': id,
-        'user_email': email,
-        'borrow_date': now.strftime("%d/%m/%Y"),
-        'due_date': sent_data.get('due_date'),
-        'return_date': ""
-    }
-
-    if len(book) == 0:
-        return jsonify({'message': "Book Doesnt Exist"}), 404
-    elif book[0]['available'] == False:
-        return jsonify({'message': "The book has already been borrowed"}), 409
-    else:
-        book[0]['available'] = False
-        HelloBooks().borrow_book(data)
-        response = jsonify({
-            'book_id': data['book_id'],
-            'user': data['user_email'],
-            'borrow_date': data['borrow_date'],
-            'due_date': data['due_date'],
-            'return_date': data['return_date']
-        })
-        response.status_code = 201
-        return response
+    return Borrow().borrow_book(
+        book_id=id,
+        user_email=email,
+        borrow_date=now.strftime("%d/%m/%Y"),
+        due_date=sent_data.get('due_date'),
+        return_date=None
+        )
 
 
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])

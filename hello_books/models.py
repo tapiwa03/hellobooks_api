@@ -7,9 +7,9 @@ from cerberus import Validator
 import datetime
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate, MigrateCommand
-from flask_script import Manager
-app = FlaskAPI(__name__)
+from flask_migrate import Migrate, MigrateCommand, Manager
+from dateutil.relativedelta import relativedelta
+from . import app
 
 
 '''Database setup'''
@@ -294,7 +294,52 @@ class Borrow(db.Model):
     due_date = db.Column(db.String(11))
     book_id = db.Column(db.String(20))
     date_returned = db.Column(db.String(200))
-    copies = db.Column(db.Integer, default=1)
+
+    def borrow_book(self, book_id, user_email, borrow_date, due_date, return_date):
+        '''Function to borrow a book'''
+        book = Books().query.filter_by(id=book_id).first()
+        books_not_returned = Borrow().query.filter_by(
+            user_email=user_email, date_returned=None).count()    
+        '''Convert dates for later comparison'''
+        borrow_time = datetime.datetime.today() + relativedelta(days=40)
+        due = datetime.datetime.strptime(due_date, "%d/%m/%Y")
+        borrow_period = datetime.datetime.strptime(borrow_time.strftime("%d/%m/%Y"), "%d/%m/%Y")
+        '''End of date formating'''
+        if HelloBooks().date_validate(due_date) == False:
+            return jsonify({"message": "Please enter a valid date"})
+        if book.copies == 0:
+            return jsonify(
+                {"message": 'All copies of %s have been borrowed.' % book.title})
+        if Books().query.filter_by(id=book_id).count() == 0:
+            return jsonify({"message": 'Book not found'}), 404
+        if books_not_returned > 4:
+            return jsonify(
+                {"message": 'you have borrowed 5 books. Please return 1 to be able to borrow another'}), 401
+        if due > borrow_period:
+            return jsonify(
+                {"message": 'Please select a return date that is less than or equal to 40 days.'}),401
+        else:
+            data = Borrow(
+                user_email=user_email,
+                borrow_date=borrow_date,
+                due_date=due_date,
+                date_returned=return_date,
+                book_id=book_id
+            )
+            book.copies = book.copies - 1
+            book.date_modified = datetime.datetime.now()
+            db.session.add(data)
+            db.session.commit()
+            return jsonify(
+                {'message':'You have borrowed the book %s due on %s.' %(book.title, due_date)}), 201
+
+        
+        
+
+
+
+
+
 
 
 
@@ -431,7 +476,7 @@ class HelloBooks(object):
 
     def date_validate(self, date_text):
         try:
-            datetime.datetime.strptime(date_text, '%d-%m-%Y')
+            datetime.datetime.strptime(date_text, '%d/%m/%Y')
             return True
         except BaseException:
             return False

@@ -58,22 +58,6 @@ class TestAuth(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn(b'access_token', result.data)
 
-    def test_user_logout(self):
-        '''test api allows user to logout'''
-        result = self.app.post('/api/v1/auth/login', data=json.dumps({
-            'email': 'john@mail.com',
-            'password': 'John2018'
-        }))
-        token = json.loads(result.data)
-        access_token = token['access_token']
-        res = self.app.post(
-            'api/v1/auth/logout',
-            headers={
-                'Authorization': 'Bearer {}'.format(access_token)},
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-        self.assertIn(b"You are now logged out", res.data)
-
     def test_change_user_password(self):
         '''Test to register new user'''
         result = self.app.post('/api/v1/auth/register', data=self.user_data2)
@@ -186,6 +170,23 @@ class TestAuth(unittest.TestCase):
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)})
         self.assertEqual(auth.status_code, 201)
+
+    def test_user_logout(self):
+        '''test api allows user to logout'''
+        result = self.app.post('/api/v1/auth/login', data=json.dumps({
+            'email': 'john@mail.com',
+            'password': 'John2018'
+        }))
+        token = json.loads(result.data)
+        access_token = token['access_token']
+        res = self.app.post(
+            'api/v1/auth/logout',
+            headers={
+                'Authorization': 'Bearer {}'.format(access_token)},
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b"You are now logged out", res.data)
+        
 
     def tearDown(self):
         # Teardown Initialized variables
