@@ -166,10 +166,8 @@ class TestAuth(unittest.TestCase):
         self.assertEqual(login.status_code, 200)
         login_msg = json.loads(login.data)
         access_token = login_msg['access_token']
-        return_date = datetime.datetime.today().strftime('%d/%m/%Y')
         return_book = self.app.put(
             '/api/v1/users/books/1',
-            data=json.dumps(return_date),
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)},
             content_type='application/json')

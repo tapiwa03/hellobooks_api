@@ -17,7 +17,7 @@ class TestBooks(unittest.TestCase):
             'author': 'Leo Tolstoy',
             'date_published': '02/12/2008',
             'genre': 'fiction',
-            'description': 'This is a description about the book war and peace by leo tolstoy'
+            'description': 'This is a description about the book war and peace by leo tolstoy',
             'isbn': '1000000000001',
             'copies': '3'
         }

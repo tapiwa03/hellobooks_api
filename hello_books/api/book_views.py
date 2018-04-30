@@ -14,12 +14,6 @@ blacklist = set()
 jwt = JWTManager(app)
 
 
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    '''Check if token is blacklisted'''
-    token_identifier = decrypted_token['jti']
-    return token_identifier in blacklist
-
 
 books = Blueprint('books', __name__)
 hello_books = HelloBooks()
@@ -108,10 +102,10 @@ def add_book():
 
 
 
-@app.route('/api/v1/users/books/<int:id>', methods=['POST', 'GET', 'PUT'])
+@app.route('/api/v1/users/books/<int:id>', methods=['POST'])
 @jwt_required
 def borrow_book(id):
-    '''function to retrieve current date'''
+    '''function to borrow a book'''
     email = get_jwt_identity()
     now = datetime.datetime.now()
     sent_data = request.get_json(force=True)
@@ -122,6 +116,19 @@ def borrow_book(id):
         due_date=sent_data.get('due_date'),
         return_date=None
         )
+
+
+@app.route('/api/v1/users/books/<int:id>', methods=['PUT'])
+@jwt_required
+def return_book(id):
+    '''function to return a book'''
+    email = get_jwt_identity()
+    time = datetime.datetime.today().strftime('%d/%m/%Y')
+    return Borrow().return_book(
+        borrow_id=id,
+        user_email=email,
+        return_date=time
+    )
 
 
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])
@@ -144,3 +151,11 @@ def get_by_id(id):
         return jsonify({"message": "Book does not exist"}), 404
     else:
         return Books().get_by_id(id), 200
+
+
+@app.route('/api/v1/users/books', methods=['GET'])
+@jwt_required
+def get_borrowing_history():
+    '''function to get a users full borrowing history'''
+    email = get_jwt_identity()
+    return Borrow().borrowing_history(user_email=email)

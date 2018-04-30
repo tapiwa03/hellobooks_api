@@ -200,7 +200,7 @@ class Books(db.Model):
                 "genre": item.genre,
                 "description": item.description,
                 "copies": item.copies,
-                "isbn": item.isbn,
+                "isbn": item.isbn
             }
             books_list.append(book)
         return jsonify(books_list), 200
@@ -333,15 +333,43 @@ class Borrow(db.Model):
             return jsonify(
                 {'message':'You have borrowed the book %s due on %s.' %(book.title, due_date)}), 201
 
+    def return_book(self, borrow_id, user_email, return_date):
+        '''function to return a book'''
+        if Borrow().query.filter_by(id=borrow_id).count() == 0:
+            return jsonify({"message": "There is no book borrowed under this id"}), 404
+        borrow = Borrow().query.filter_by(id=borrow_id).first()
+        book = Books().query.filter_by(id=borrow.book_id).first()
+        if borrow.date_returned is None:    
+            if borrow.user_email == user_email:
+                borrow.date_returned = return_date
+                book.date_modified = datetime.datetime.now()
+                db.session.commit()
+                return jsonify({"message": "The book %s has been returned" % book.title}),201
+            return jsonify({"message": "You did not borrow this book"}), 401
+        return jsonify({"message": "This book has been returned"}), 401
 
-    
+
+    def borrowing_history(self, user_email):
+        '''Function to retrieve a users full borrowing history'''
+        if Borrow().query.filter_by(user_email=user_email).count() < 1:
+            return jsonify({"message" : 'This user has not borrowed any books yet'}), 404
+        borrow_list = []
+        history = Borrow().query.filter_by(user_email=user_email)
+        for item in history:
+            book = Books().query.filter_by(id=item.book_id).first()
+            user = User().query.filter_by(email=user_email).first()
+            borrowed = {
+                "borrow_id": item.id,
+                "book_title": book.title,
+                "isbn": item.isbn,
+                "username": user.username,
+                "borrow_date": item.borrow_date,
+                "due_date": item.due_date,
+                "date_returned": item.cdate_returned,
+            }
+            borrow_list.append(borrowed)
+        return jsonify(borrow_list), 200
         
-        
-
-
-
-
-
 
 
 
