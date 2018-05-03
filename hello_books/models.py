@@ -361,15 +361,38 @@ class Borrow(db.Model):
             borrowed = {
                 "borrow_id": item.id,
                 "book_title": book.title,
-                "isbn": item.isbn,
+                "isbn": book.isbn,
                 "username": user.username,
                 "borrow_date": item.borrow_date,
                 "due_date": item.due_date,
-                "date_returned": item.cdate_returned,
+                "date_returned": item.date_returned,
             }
             borrow_list.append(borrowed)
         return jsonify(borrow_list), 200
-        
+
+    def books_not_returned(self, user_email):
+        '''Function to retrieve the books currently in the possession of the user'''
+        if Borrow().query.filter_by(user_email=user_email).count() < 1:
+            return jsonify({"message": 'This user has not borrowed any books yet'}), 404
+        borrow_list = []
+        history = Borrow().query.filter_by(user_email=user_email)
+        for item in history:
+            book = Books().query.filter_by(id=item.book_id).first()
+            user = User().query.filter_by(email=user_email).first()
+            borrowed = {
+                "borrow_id": item.id,
+                "book_title": book.title,
+                "isbn": book.isbn,
+                "username": user.username,
+                "borrow_date": item.borrow_date,
+                "due_date": item.due_date,
+                "date_returned": item.date_returned,
+            }
+            if item.date_returned == None:
+                borrow_list.append(borrowed)
+        if len(borrowed) < 1:
+            return jsonify({"message": "All books have been returned."}), 200
+        return jsonify(borrow_list), 200
 
 
 

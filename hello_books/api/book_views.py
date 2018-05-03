@@ -1,6 +1,7 @@
 '''import dependancies'''
 import datetime
 from flask import jsonify, Blueprint, request, make_response, session
+from flask_restful import reqparse
 from hello_books import app
 from hello_books.models import HelloBooks, Books, Borrow
 from flask_jwt_extended import (
@@ -19,6 +20,11 @@ books = Blueprint('books', __name__)
 hello_books = HelloBooks()
 
 
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    '''check if token is blacklisted'''
+    jti = decrypted_token['jti']
+    return jti in blacklist
 
 @app.route('/api/v1/books/<int:id>', methods=['PUT'])
 @jwt_required
@@ -101,36 +107,6 @@ def add_book():
         return jsonify({"message": "Please enter correct book details"})
 
 
-
-@app.route('/api/v1/users/books/<int:id>', methods=['POST'])
-@jwt_required
-def borrow_book(id):
-    '''function to borrow a book'''
-    email = get_jwt_identity()
-    now = datetime.datetime.now()
-    sent_data = request.get_json(force=True)
-    return Borrow().borrow_book(
-        book_id=id,
-        user_email=email,
-        borrow_date=now.strftime("%d/%m/%Y"),
-        due_date=sent_data.get('due_date'),
-        return_date=None
-        )
-
-
-@app.route('/api/v1/users/books/<int:id>', methods=['PUT'])
-@jwt_required
-def return_book(id):
-    '''function to return a book'''
-    email = get_jwt_identity()
-    time = datetime.datetime.today().strftime('%d/%m/%Y')
-    return Borrow().return_book(
-        borrow_id=id,
-        user_email=email,
-        return_date=time
-    )
-
-
 @app.route('/api/v1/books/<int:id>', methods=['DELETE'])
 @jwt_required
 def delete_book(id):
@@ -153,9 +129,48 @@ def get_by_id(id):
         return Books().get_by_id(id), 200
 
 
+@app.route('/api/v1/users/books/<int:id>', methods=['POST'])
+@jwt_required
+def borrow_book(id):
+    '''function to borrow a book'''
+    email = get_jwt_identity()
+    now = datetime.datetime.now()
+    sent_data = request.get_json(force=True)
+    return Borrow().borrow_book(
+        book_id=id,
+        user_email=email,
+        borrow_date=now.strftime("%d/%m/%Y"),
+        due_date=sent_data.get('due_date'),
+        return_date=None
+    )
+
+
+@app.route('/api/v1/users/books/<int:id>', methods=['PUT'])
+@jwt_required
+def return_book(id):
+    '''function to return a book'''
+    email = get_jwt_identity()
+    time = datetime.datetime.today().strftime('%d/%m/%Y')
+    return Borrow().return_book(
+        borrow_id=id,
+        user_email=email,
+        return_date=time
+    )
+
+
 @app.route('/api/v1/users/books', methods=['GET'])
 @jwt_required
 def get_borrowing_history():
     '''function to get a users full borrowing history'''
     email = get_jwt_identity()
+    if 'returned' in request.args:
+        if request.args['returned'] == 'false':
+            return Borrow().books_not_returned(user_email=email)
     return Borrow().borrowing_history(user_email=email)
+
+
+
+
+        
+
+   

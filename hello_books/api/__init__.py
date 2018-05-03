@@ -2,7 +2,7 @@
 from flask import jsonify
 from hello_books import app
 
-app.url_map.strict_slashes = False
+
 
 @app.errorhandler(404)
 def not_found(error):
@@ -44,3 +44,4 @@ def forbidden(error):
 def conflict(error):
     '''Érror message for 409, conflict'''
     return jsonify(dict(error='Conflict')), 409
+
