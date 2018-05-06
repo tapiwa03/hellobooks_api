@@ -117,7 +117,15 @@ def delete_book(id):
 @app.route('/api/v1/books', methods=['GET'])
 def get_all_books():
     '''function to get all books'''
-    return Books().get_all()
+    if 'page' in request.args:
+        page = int(request.args['page'])
+    else:
+        page = 1
+    if 'results' in request.args:
+        results = int(request.args['results'])
+    else:
+        results = 10
+    return Books().get_all(page=page, per_page=results)
 
 
 @app.route('/api/v1/books/<int:id>', methods=['GET'])
@@ -174,7 +182,7 @@ def get_borrowing_history():
     if 'results' in request.args:
         results = int(request.args['results'])
     else:
-        results = 10
+        results = 5
     return Borrow().borrowing_history(user_email=email, page=page, per_page=results)
 
 

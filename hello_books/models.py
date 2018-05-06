@@ -188,11 +188,14 @@ class Books(db.Model):
             return jsonify(book), 200
 
     @staticmethod    
-    def get_all():
+    def get_all(page, per_page):
         '''Function for retrieving all users'''
-        books = Books().query.all()
+        books = Books().query.order_by(Books.id.asc()).paginate(
+            page,
+            per_page,
+            error_out=True)
         books_list = []
-        for item in books:
+        for item in books.items:
             book = {
                 "title": item.title,
                 "author": item.author,
@@ -354,7 +357,10 @@ class Borrow(db.Model):
         if Borrow().query.filter_by(user_email=user_email).count() < 1:
             return jsonify({"message" : 'This user has not borrowed any books yet'}), 404
         borrow_list = []
-        history = Borrow().query.filter_by(user_email=user_email).paginate(page,per_page,error_out=False)
+        history = Borrow().query.filter_by(user_email=user_email).paginate(
+            page,
+            per_page,
+            error_out=True)
         for item in history.items:
             book = Books().query.filter_by(id=item.book_id).first()
             user = User().query.filter_by(email=user_email).first()
