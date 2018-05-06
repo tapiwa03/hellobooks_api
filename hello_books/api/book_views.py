@@ -163,10 +163,19 @@ def return_book(id):
 def get_borrowing_history():
     '''function to get a users full borrowing history'''
     email = get_jwt_identity()
+    #endpoint for retrieving books not returned "/api/v1/users/books?returned=false"
     if 'returned' in request.args:
         if request.args['returned'] == 'false':
             return Borrow().books_not_returned(user_email=email)
-    return Borrow().borrowing_history(user_email=email)
+    if 'page' in request.args:
+        page = int(request.args['page'])
+    else:
+        page = 1
+    if 'results' in request.args:
+        results = int(request.args['results'])
+    else:
+        results = 10
+    return Borrow().borrowing_history(user_email=email, page=page, per_page=results)
 
 
 

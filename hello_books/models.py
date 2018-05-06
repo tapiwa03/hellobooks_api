@@ -349,13 +349,13 @@ class Borrow(db.Model):
         return jsonify({"message": "This book has been returned"}), 401
 
 
-    def borrowing_history(self, user_email):
+    def borrowing_history(self, user_email, page, per_page):
         '''Function to retrieve a users full borrowing history'''
         if Borrow().query.filter_by(user_email=user_email).count() < 1:
             return jsonify({"message" : 'This user has not borrowed any books yet'}), 404
         borrow_list = []
-        history = Borrow().query.filter_by(user_email=user_email)
-        for item in history:
+        history = Borrow().query.filter_by(user_email=user_email).paginate(page,per_page,error_out=False)
+        for item in history.items:
             book = Books().query.filter_by(id=item.book_id).first()
             user = User().query.filter_by(email=user_email).first()
             borrowed = {
