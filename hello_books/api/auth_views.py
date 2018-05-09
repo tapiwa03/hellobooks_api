@@ -117,7 +117,15 @@ def change_password():
 @jwt_required
 def view_users():
     '''Function for viewing all books'''
-    return User().view_users(), 200
+    if 'page' in request.args:
+        page = int(request.args['page'])
+    else:
+        page = 1
+    if 'results' in request.args:
+        results = int(request.args['results'])
+    else:
+        results = 5
+    return User().view_users(page=page, per_page=results), 200
 
 
 @app.route('/api/v1/auth/make-admin', methods=['PUT'])

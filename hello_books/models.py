@@ -132,10 +132,13 @@ class User(db.Model):
         else:
             return jsonify({"message": "Email does not exist"}), 404
 
-    def view_users(self):
-        users = User().query.all()
+    def view_users(self, page, per_page):
+        users = User().query.order_by(User.id.asc()).paginate(
+            page,
+            per_page,
+            error_out=True)
         user_list = []
-        for item in users:
+        for item in users.items:
             user = {
                 "username": item.username,
                 "email": item.email,
@@ -144,6 +147,7 @@ class User(db.Model):
             }
             user_list.append(user)
         return jsonify(user_list)
+
 
 
 class Books(db.Model):
