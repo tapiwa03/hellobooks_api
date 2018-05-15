@@ -1,32 +1,21 @@
 '''import dependancies'''
 import datetime
 from flask import jsonify, Blueprint, request, make_response, session
-from flask_restful import reqparse
-from hello_books import app
-from hello_books.models import HelloBooks, Books, Borrow
+from hello_books import create_app
+from hello_books.models.borrow_model import Borrow
+from hello_books.models.book_model import Books
+from hello_books.models.validate_model import HelloBooks
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
 )
 
-blacklist = set()
-
-
-jwt = JWTManager(app)
-
-
-
 books = Blueprint('books', __name__)
-hello_books = HelloBooks()
 
 
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    '''check if token is blacklisted'''
-    jti = decrypted_token['jti']
-    return jti in blacklist
 
-@app.route('/api/v1/books/<int:id>', methods=['PUT'])
+
+@books.route('/api/v1/books/<int:id>', methods=['PUT'])
 @jwt_required
 def edit_book(id):
     '''Function for editing book info'''
@@ -77,7 +66,7 @@ def edit_book(id):
         book_id=id
     )
     
-@app.route('/api/v1/books', methods=['POST'])
+@books.route('/api/v1/books', methods=['POST'])
 @jwt_required
 def add_book():
     '''Function to add a book'''
@@ -107,14 +96,14 @@ def add_book():
         return jsonify({"message": "Please enter correct book details"})
 
 
-@app.route('/api/v1/books/<int:id>', methods=['DELETE'])
+@books.route('/api/v1/books/<int:id>', methods=['DELETE'])
 @jwt_required
 def delete_book(id):
     '''function to delete book'''
     return Books().delete(id)
 
 
-@app.route('/api/v1/books', methods=['GET'])
+@books.route('/api/v1/books', methods=['GET'])
 def get_all_books():
     '''function to get all books'''
     if 'page' in request.args:
@@ -128,7 +117,7 @@ def get_all_books():
     return Books().get_all(page=page, per_page=results)
 
 
-@app.route('/api/v1/books/<int:id>', methods=['GET'])
+@books.route('/api/v1/books/<int:id>', methods=['GET'])
 def get_by_id(id):
     '''function to get a single book by its id'''
     if Books().get_by_id(id) == False:
@@ -137,7 +126,7 @@ def get_by_id(id):
         return Books().get_by_id(id), 200
 
 
-@app.route('/api/v1/users/books/<int:id>', methods=['POST'])
+@books.route('/api/v1/users/books/<int:id>', methods=['POST'])
 @jwt_required
 def borrow_book(id):
     '''function to borrow a book'''
@@ -153,7 +142,7 @@ def borrow_book(id):
     )
 
 
-@app.route('/api/v1/users/books/<int:id>', methods=['PUT'])
+@books.route('/api/v1/users/books/<int:id>', methods=['PUT'])
 @jwt_required
 def return_book(id):
     '''function to return a book'''
@@ -166,7 +155,7 @@ def return_book(id):
     )
 
 
-@app.route('/api/v1/users/books', methods=['GET'])
+@books.route('/api/v1/users/books', methods=['GET'])
 @jwt_required
 def get_borrowing_history():
     '''function to get a users full borrowing history'''

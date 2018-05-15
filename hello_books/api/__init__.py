@@ -1,7 +1,8 @@
 '''Import Dependances'''
 from flask import jsonify
-from hello_books import app
+from hello_books import create_app
 
+app = create_app('development')
 
 
 @app.errorhandler(404)

@@ -1,7 +1,7 @@
 '''importing dependancies'''
 import unittest
 from flask import json, Flask
-from hello_books import app, jwt
+from hello_books import create_app
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
@@ -9,7 +9,8 @@ from flask_jwt_extended import (
 from cerberus import Validator
 import datetime
 
-
+app = create_app()
+jwt = JWTManager(app)
 
 class TestAuth(unittest.TestCase):
     '''Class for testing user authentication'''

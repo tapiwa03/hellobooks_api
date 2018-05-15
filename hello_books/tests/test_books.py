@@ -1,7 +1,14 @@
 '''import dependancies'''
 import unittest
 from flask import json
-from hello_books import app
+from hello_books import create_app
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
+
+app = create_app()
+
 
 
 class TestBooks(unittest.TestCase):
