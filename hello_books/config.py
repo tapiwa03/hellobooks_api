@@ -35,19 +35,20 @@ class BaseConfig:
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'Random-Key_1to3'
-    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=45)
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:test1234@localhost/testdb"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:test1234@localhost/hellobooks"
 
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:test1234@localhost/db_test"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:test1234@localhost/testdb"
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
 
 
 app_config = {

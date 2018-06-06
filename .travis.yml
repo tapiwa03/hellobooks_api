@@ -12,11 +12,14 @@ install:
   - pip install pytest pytest-cov
   - pip install gunicorn
 # command to run tests
+before_script:
+ - psql -c 'create database db_test;' -U postgres
 script: 
   - pytest --cov=./ 
 after_success:
  - coveralls
  - codeclimate-test-reporter
+
 
   
   

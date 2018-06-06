@@ -18,6 +18,7 @@ auth = Blueprint('auth', __name__)
 
 
 
+
 @auth.route('/', methods=['GET'])
 def home():
     '''Home page containing link to documentation'''

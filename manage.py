@@ -9,18 +9,16 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
 
-app = create_app('development')
-cli = FlaskGroup(create_app=create_app)
+app = create_app(config_name='development')
 
 #initialize the app with all its configurations
-app = create_app(config_name='testing')
 migrate = Migrate(app, db)
 #create an instance of class to handle all commands
 manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
 
-@cli.command()
+@manager.command
 def recreate_db():
     db.drop_all()
     db.create_all()
@@ -28,7 +26,7 @@ def recreate_db():
 
 
 
-@cli.command()
+@manager.command
 def test():
     """ Runs the tests without code coverage"""
     tests = unittest.TestLoader().discover('hello_books/tests', pattern='test*.py')
@@ -38,4 +36,4 @@ def test():
     return 1
 
 if __name__ == '__main__':
-    cli()
+    manager.run()
