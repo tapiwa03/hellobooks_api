@@ -10,21 +10,10 @@ from hello_books import create_app
 from hello_books.models.validate_model import HelloBooks
 from hello_books.models.book_model import Books
 from hello_books.models.user_model import User
+from hello_books.models.blacklist_model import Blacklist
+
 
 auth = Blueprint('auth', __name__)
-
-
-
-
-
-
-
-@auth.route('/', methods=['GET'])
-def home():
-    '''Home page containing link to documentation'''
-    return jsonify(
-        {'Hello Books API': "Click here to see documentation -> https://hellobooks8.docs.apiary.io/"})
-
 
 @auth.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
@@ -42,36 +31,45 @@ def reset_password():
 @auth.route('/api/v1/auth/register', methods=['POST'])
 def register():
     '''Fuction to register a new user'''
-    try:
-        sent_data = request.get_json(force=True)
-        raw_data = {
-            'name': sent_data['name'],
-            'email': sent_data['email'],
-            'password': sent_data['password']
-        }
-        data = {k.strip(): v.strip() for k, v in raw_data.items()}
-        if User().check_email_exists(data['email']) == True:
-            return jsonify({'message': 'Email Exists'})
+    sent_data = request.get_json(force=True)
+    if 'email' not in request.json:
+        return jsonify({"message": "Please input email"})
+    if 'password' not in request.json:
+        return jsonify({"message": "Please input password"})
+    if 'name' not in request.json:
+        return jsonify({"message": "Please input name"})
+    raw_data = {
+        'name': sent_data['name'],
+        'email': sent_data['email'],
+        'password': sent_data['password']
+    }
+    data = {k.strip(): v.strip() for k, v in raw_data.items()}
+    if User().check_email_exists(data['email']) == True:
+        return jsonify({'message': 'Email Exists'})
+    else:
+        if HelloBooks().user_data_validation(data) == True:
+            new_user = User(
+                username = data['name'],
+                email=data['email'],
+                password=User().hash_password(data['password']),
+                date_created=datetime.datetime.now())
+            User().save(new_user)
+            return jsonify({'message': 'Registered Successfully.'}), 201
+
         else:
-            if HelloBooks().user_data_validation(data) == True:
-                new_user = User(
-                    username = data['name'],
-                    email=data['email'],
-                    password=User().hash_password(data['password']),
-                    date_created=datetime.datetime.now())
-                User().save(new_user)
-                return jsonify({'message': 'Registered Successfully.'}), 201
-            else:
-                return jsonify(
-                    {'message': 'Please enter all the data in the correct format.'})
-    except BaseException:
-        return jsonify({"message": "An error occured. Please try again."}), 500
+            return jsonify(
+                {'message': 'Please enter all the data in the correct format.'})
+
 
 
 @auth.route('/api/v1/auth/login', methods=['POST'])
 def login():
     '''Function for logging in'''
     sent_data = request.get_json(force=True)
+    if 'email' not in request.json:
+        return jsonify({"message": "Please input email"})
+    if 'password' not in request.json:
+        return jsonify({"message": "Please input password"})
     raw_data = {
         'email': sent_data['email'],
         'password': sent_data['password']

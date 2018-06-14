@@ -1,12 +1,13 @@
 from flask import jsonify, Blueprint, request, Flask, json
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
-    create_access_token
+    create_access_token, get_jwt_identity
 )
 import datetime
 from dateutil.relativedelta import relativedelta
 from hello_books import create_app, db
 from hello_books.models.validate_model import HelloBooks
+from hello_books.models.blacklist_model import Blacklist
 
 
 class User(db.Model):
@@ -22,8 +23,19 @@ class User(db.Model):
     date_modified = db.Column(db.DateTime)
 
     def save(self, data):
+        if User().query.count() < 1:
+            admin = User(
+                    username = 'Admin',
+                    email='tapiwa.lason@gmail.com',
+                    password=User().hash_password('SecretKey1to3'),
+                    date_created=datetime.datetime.now(),
+                    is_admin=True)
+            db.session.add(admin)
+            db.session.commit()
         db.session.add(data)
         db.session.commit()
+        
+        
 
     def hash_password(self, data):
          return generate_password_hash(data)
@@ -34,11 +46,18 @@ class User(db.Model):
             return True
         return False
 
+    @staticmethod
+    def check_user_is_admin():
+        mail = get_jwt_identity()
+        user = User().query.filter_by(email=mail).first()
+        if user.is_admin == False:
+            return False
+
     def user_login(self, mail, password):
         '''this checks the list and returns the email or false'''
         user = User().query.filter_by(email=mail).first()
         if self.check_email_exists(mail) == False:
-            return jsonify({'message': 'Email does not exist.'})
+            return jsonify({'message': 'Email does not exist.'}), 404
         elif self.check_email_exists(mail) == True:
             if user.authorized == True:
                 if check_password_hash(user.password, password) is True:
@@ -79,6 +98,8 @@ class User(db.Model):
                 {'message': "Password needs to be 6 characters or more"})
 
     def make_admin(self, my_password, email_of_user, my_mail):
+        if self.check_user_is_admin() is False:
+            return jsonify({"message": "You are not authorise to perfrom this action"}), 403
         if self.check_email_exists(email_of_user) == True:
             normal_user = User().query.filter_by(email=email_of_user).first()
             admin_user = User().query.filter_by(email=my_mail).first()
@@ -94,6 +115,8 @@ class User(db.Model):
             return jsonify({"message": "That email does not exist."}), 404
 
     def authorize(self, my_password, email_of_user, my_mail):
+        if self.check_user_is_admin() is False:
+            return jsonify({"message": "You are not authorise to perfrom this action"}), 403
         if self.check_email_exists(email_of_user) == True:
             normal_user = User().query.filter_by(email=email_of_user).first()
             admin_user = User().query.filter_by(email=my_mail).first()
@@ -116,6 +139,8 @@ class User(db.Model):
             return jsonify({"message": "Email does not exist"}), 404
 
     def view_users(self, page, per_page):
+        if self.check_user_is_admin() is False:
+            return jsonify({"message": "You are not authorise to perfrom this action"}), 403
         users = User().query.order_by(User.id.asc()).paginate(
             page,
             per_page,
@@ -129,4 +154,4 @@ class User(db.Model):
                 "authorized": item.authorized
             }
             user_list.append(user)
-        return jsonify(user_list)
+        return jsonify(user_list), 200

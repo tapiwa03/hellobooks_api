@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint, request, Flask, json
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
-    create_access_token
+    create_access_token, get_jwt_identity
 )
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -28,19 +28,19 @@ class Borrow(db.Model):
         book = Books().query.filter_by(id=book_id).first()
         books_not_returned = Borrow().query.filter_by(
             user_email=user_email, date_returned=None).count()
+        if Books().query.filter_by(id=book_id).count() == 0:
+            return jsonify({"message": 'Book not found'}), 404
+        if HelloBooks().date_validate(due_date) == False:
+            return jsonify({"message": "Please enter a valid date"}), 401
         '''Convert dates for later comparison'''
         borrow_time = datetime.datetime.today() + relativedelta(days=40)
         due = datetime.datetime.strptime(due_date, "%d/%m/%Y")
         borrow_period = datetime.datetime.strptime(
             borrow_time.strftime("%d/%m/%Y"), "%d/%m/%Y")
         '''End of date formating'''
-        if HelloBooks().date_validate(due_date) == False:
-            return jsonify({"message": "Please enter a valid date"})
-        if book.copies == 0:
+        if book.copies < 1:
             return jsonify(
                 {"message": 'All copies of %s have been borrowed.' % book.title})
-        if Books().query.filter_by(id=book_id).count() == 0:
-            return jsonify({"message": 'Book not found'}), 404
         if books_not_returned > 4:
             return jsonify(
                 {"message": 'you have borrowed 5 books. Please return 1 to be able to borrow another'}), 401
@@ -80,7 +80,7 @@ class Borrow(db.Model):
     def borrowing_history(self, user_email, page, per_page):
         '''Function to retrieve a users full borrowing history'''
         if Borrow().query.filter_by(user_email=user_email).count() < 1:
-            return jsonify({"message": 'This user has not borrowed any books yet'}), 200
+            return jsonify({"message": 'This user has not borrowed any books yet'}), 404
         borrow_list = []
         history = Borrow().query.filter_by(user_email=user_email).paginate(
             page,

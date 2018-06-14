@@ -11,7 +11,6 @@ from flask_migrate import Migrate, MigrateCommand
 
 app = create_app(config_name='development')
 
-#initialize the app with all its configurations
 migrate = Migrate(app, db)
 #create an instance of class to handle all commands
 manager = Manager(app)

@@ -164,10 +164,12 @@ def get_borrowing_history():
     if 'returned' in request.args:
         if request.args['returned'] == 'false':
             return Borrow().books_not_returned(user_email=email)
+    #desired page number
     if 'page' in request.args:
         page = int(request.args['page'])
     else:
         page = 1
+    #desired results per page
     if 'results' in request.args:
         results = int(request.args['results'])
     else:

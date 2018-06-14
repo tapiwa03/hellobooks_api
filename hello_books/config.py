@@ -1,35 +1,4 @@
 import datetime
-'''
-class Config:
-    """Parent config class"""
-    DEBUG = False
-    CSRF_ENABLED = True
-    SECRET_KEY = 'Some-Key'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgre:test1234@localhost:5432/hellobooks'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    @staticmethod
-    def init_app(app):
-        pass
-
-
-class DevelopmentConfig(Config):
-    """Configurations for development"""
-    DEBUG = True
-
-
-class TestingConfig(Config):
-    TESTING = True
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgre:test1234@localhost:5432/test_db'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-
-app_config = {
-    'development': DevelopmentConfig,
-    'testing': TestingConfig
-}
-'''
 class BaseConfig:
     """Base configuration"""
     TESTING = False
@@ -40,14 +9,14 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:test1234@localhost/hellobooks"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:@localhost/hellobooks"
 
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:test1234@localhost/testdb"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:@localhost/testdb"
     PRESERVE_CONTEXT_ON_EXCEPTION = False
 
 

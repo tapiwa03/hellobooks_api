@@ -1,12 +1,13 @@
 from flask import jsonify, Blueprint, request, Flask, json
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
-    create_access_token
+    create_access_token, get_jwt_identity
 )
 import datetime
 from dateutil.relativedelta import relativedelta
 from hello_books import create_app, db
 from hello_books.models.validate_model import HelloBooks
+from hello_books.models.user_model import User
 
 
 class Books(db.Model):
@@ -26,12 +27,16 @@ class Books(db.Model):
 
     def save(self, data):
         '''Save/add a book'''
+        if  User().check_user_is_admin() is False:
+            return jsonify({"message": "You are not authorise to perfrom this action"}), 403
         db.session.add(data)
         db.session.commit()
 
     @staticmethod
     def delete(id):
         '''delete a book'''
+        if  User().check_user_is_admin() is False:
+            return jsonify({"message": "You are not authorise to perfrom this action"}), 403
         if Books().query.filter_by(id=id).count() == 0:
             return jsonify({"message": "Book does not exist"}), 404
         else:
@@ -51,7 +56,7 @@ class Books(db.Model):
 
     @staticmethod
     def get_all(page, per_page):
-        '''Function for retrieving all users'''
+        '''Function for retrieving all books'''
         books = Books().query.order_by(Books.id.asc()).paginate(
             page,
             per_page,
@@ -72,6 +77,8 @@ class Books(db.Model):
 
     def add_book(self, title, author, date_published, genre, description, isbn, copies, date_created):
         '''Function for adding a user'''
+        if  User().check_user_is_admin() is False:
+            return jsonify({"message": "You are not authorise to perfrom this action"}), 403
         if Books().query.filter_by(isbn=isbn).count() != 0:
             existing_book = Books().query.filter_by(isbn=isbn).first()
             existing_book.copies += 1
@@ -94,6 +101,10 @@ class Books(db.Model):
     @staticmethod
     def edit_book(title, book_id, author, date_published, genre, description, copies, isbn):
         '''Function for editing a book'''
+        #check if user is admin
+        if  User().check_user_is_admin() is False:
+            return jsonify({"message": "You are not authorise to perfrom this action"}), 403
+        #check if book exists
         if Books().query.filter_by(id=book_id).count() == 0:
             return jsonify({"message": 'Book not found'})
         book = Books().query.filter_by(id=book_id).first()

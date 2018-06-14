@@ -5,6 +5,7 @@ __pycache__/
 bootcamp-c2/.pytest_cache/
 .pytest_cache/
 migrations/
+.env
 
 # C extensions
 *.so
