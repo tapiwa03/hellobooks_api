@@ -9,11 +9,16 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
 )
+from hello_books.models.blacklist_model import Blacklist
 
 books = Blueprint('books', __name__)
 
-
-
+@books.before_request
+@jwt_required
+def check_token():
+    jti = get_raw_jwt()['jti']
+    if Blacklist().check_token(jti) == False:
+            return jsonify({"message":"You are not logged in."}), 403
 
 @books.route('/api/v1/books/<int:id>', methods=['PUT'])
 @jwt_required
@@ -104,6 +109,7 @@ def delete_book(id):
 
 
 @books.route('/api/v1/books', methods=['GET'])
+@jwt_required
 def get_all_books():
     '''function to get all books'''
     if 'page' in request.args:
@@ -118,12 +124,13 @@ def get_all_books():
 
 
 @books.route('/api/v1/books/<int:id>', methods=['GET'])
-def get_by_id(id):
+@jwt_required
+def get_by_book_id(id):
     '''function to get a single book by its id'''
     if Books().get_by_id(id) == False:
         return jsonify({"message": "Book does not exist"}), 404
     else:
-        return Books().get_by_id(id), 200
+        return Books().get_by_id(id)
 
 
 @books.route('/api/v1/users/books/<int:id>', methods=['POST'])
@@ -175,10 +182,27 @@ def get_borrowing_history():
     else:
         results = 5
     return Borrow().borrowing_history(user_email=email, page=page, per_page=results)
-
-
-
-
         
+@books.route('/api/v1/users/books/all', methods=['GET'])
+@jwt_required
+def books_currently_out():
+    '''function to get a users full borrowing history'''
+    #entry format /api/v1/users/books?page=3&results=8
+    #desired page number
+    if 'page' in request.args:
+        page = int(request.args['page'])
+    else:
+        page = 1
+    #desired results per page
+    if 'results' in request.args:
+        results = int(request.args['results'])
+    else:
+        results = 5
+    return Borrow().books_currently_out(page=page, per_page=results)
 
    
+@books.route('/api/v1/auth/logout', methods=['POST'])
+@jwt_required
+def logout():
+    '''Function for logout'''
+    return Blacklist().logout()

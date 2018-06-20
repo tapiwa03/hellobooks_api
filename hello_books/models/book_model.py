@@ -8,6 +8,7 @@ from dateutil.relativedelta import relativedelta
 from hello_books import create_app, db
 from hello_books.models.validate_model import HelloBooks
 from hello_books.models.user_model import User
+from hello_books.models.blacklist_model import Blacklist
 
 
 class Books(db.Model):
@@ -32,8 +33,7 @@ class Books(db.Model):
         db.session.add(data)
         db.session.commit()
 
-    @staticmethod
-    def delete(id):
+    def delete(self, id):
         '''delete a book'''
         if  User().check_user_is_admin() is False:
             return jsonify({"message": "You are not authorise to perfrom this action"}), 403
@@ -45,17 +45,24 @@ class Books(db.Model):
             db.session.commit()
             return jsonify({"message": "Successfully deleted."}), 200
 
-    @staticmethod
-    def get_by_id(book_id):
+    def get_by_id(self, book_id):
         '''Function for retriving a book by its Id'''
         if Books().query.filter_by(id=book_id).count() == 0:
             return False
-        else:
-            book = Books().query.filter_by(id=book_id).first()
-            return jsonify(book), 200
+        item = Books().query.filter_by(id=book_id).first()
+        book = {
+            "id": item.id,
+            "title": item.title,
+            "author": item.author,
+            "date_published": item.date_published,
+            "genre": item.genre,
+            "description": item.description,
+            "copies": item.copies,
+            "isbn": item.isbn
+        }
+        return jsonify(book), 200
 
-    @staticmethod
-    def get_all(page, per_page):
+    def get_all(self, page, per_page):
         '''Function for retrieving all books'''
         books = Books().query.order_by(Books.id.asc()).paginate(
             page,
@@ -64,6 +71,7 @@ class Books(db.Model):
         books_list = []
         for item in books.items:
             book = {
+                "id": item.id,
                 "title": item.title,
                 "author": item.author,
                 "date_published": item.date_published,
@@ -98,8 +106,7 @@ class Books(db.Model):
             return jsonify(
                 {"message": "%s by %s has been added to library" % (title, author)})
 
-    @staticmethod
-    def edit_book(title, book_id, author, date_published, genre, description, copies, isbn):
+    def edit_book(self,title, book_id, author, date_published, genre, description, copies, isbn):
         '''Function for editing a book'''
         #check if user is admin
         if  User().check_user_is_admin() is False:
@@ -108,21 +115,21 @@ class Books(db.Model):
         if Books().query.filter_by(id=book_id).count() == 0:
             return jsonify({"message": 'Book not found'})
         book = Books().query.filter_by(id=book_id).first()
-        '''Check if title is entered and if it is correct'''
+        #Check if title is entered and if it is correct
         if title is not None:
             if HelloBooks().edit_book_validation({'title': title}) == True:
                 book.title = title
             else:
                 return jsonify(
                     {'message': 'Please enter a correct title above 4 characters'})
-        '''check if author is entered and if it is correct'''
+        #check if author is entered and if it is correct
         if author is not None:
             if HelloBooks().edit_book_validation({'author': author}) == True:
                 book.author = author
             else:
                 return jsonify(
                     {'message': 'Please enter a correct author above 4 characters'})
-        '''check if date is correctly entered'''
+        #check if date is correctly entered
         if date_published is not None:
             if HelloBooks().date_validate(date_published) == True:
                 book.date_published = date_published

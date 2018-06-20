@@ -15,6 +15,11 @@ from hello_books.models.blacklist_model import Blacklist
 
 auth = Blueprint('auth', __name__)
 
+@auth.route('/', methods=['Get'])
+def home():
+    '''Home page'''
+    return jsonify({"message": "Home page"})
+
 @auth.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
     '''Function to reseta user password'''
@@ -48,12 +53,11 @@ def register():
         return jsonify({'message': 'Email Exists'})
     else:
         if HelloBooks().user_data_validation(data) == True:
-            new_user = User(
-                username = data['name'],
-                email=data['email'],
-                password=User().hash_password(data['password']),
-                date_created=datetime.datetime.now())
-            User().save(new_user)
+            username = data['name']
+            email = data['email']
+            password = User().hash_password(data['password'])
+            date_created = datetime.datetime.now()
+            User().save(username, email, password, date_created)
             return jsonify({'message': 'Registered Successfully.'}), 201
 
         else:
@@ -81,62 +85,19 @@ def login():
     )
 
 
-@auth.route('/api/v1/auth/logout', methods=['GET', 'POST'])
-@jwt_required
-def logout():
-    '''Function for logout'''
-    token_identifier = get_raw_jwt()['jti']
-    blacklist.add(token_identifier)
-    return jsonify({'message': 'You are now logged out'}), 200
-
 
 @auth.route('/api/v1/auth/change-password', methods=['PUT'])
 @jwt_required
 def change_password():
     '''Function for changing user password'''
-    try:
-        email = get_jwt_identity()
-        new_password = request.json.get('new_password').strip()
-        old_password = request.json.get('old_password').strip()
-        return User().change_password(
-            old_password=old_password,
-            new_password=new_password,
-            mail=email)
-    except BaseException:
-        return jsonify({"message": "An error occured. Please try again."})
-
-
-@auth.route('/api/v1/auth/users', methods=['GET'])
-@jwt_required
-def view_users():
-    '''Function for viewing all books'''
-    if 'page' in request.args:
-        page = int(request.args['page'])
-    else:
-        page = 1
-    if 'results' in request.args:
-        results = int(request.args['results'])
-    else:
-        results = 5
-    return User().view_users(page=page, per_page=results), 200
-
-
-@auth.route('/api/v1/auth/make-admin', methods=['PUT'])
-@jwt_required
-def make_admin():
-    '''Function for changing a user to an admin'''
-    try:
-        my_email = get_jwt_identity()
-        email_of_user = request.json.get('email_of_user').strip()
-        my_password = request.json.get('password').strip()
-        return User().make_admin(
-            my_password=my_password,
-            email_of_user=email_of_user,
-            my_mail=my_email)
-    except BaseException:
-        return jsonify({"message": "An error occured. Please try again."})
-
-
+    email = get_jwt_identity()
+    new_password = request.json.get('new_password').strip()
+    old_password = request.json.get('old_password').strip()
+    return User().change_password(
+        old_password=old_password,
+        new_password=new_password,
+        mail=email)
+    
 @auth.route('/api/v1/auth/authorize', methods=['PUT'])
 @jwt_required
 def authorize():
@@ -151,3 +112,17 @@ def authorize():
             my_mail=my_email)
     except BaseException:
         return jsonify({"message": "An error occured. Please try again."})
+
+@auth.route('/api/v1/auth/users', methods=['GET'])
+@jwt_required
+def get_all_users():
+    '''function to get all books'''
+    if 'page' in request.args:
+        page = int(request.args['page'])
+    else:
+        page = 1
+    if 'results' in request.args:
+        results = int(request.args['results'])
+    else:
+        results = 5
+    return User().get_all_users(page=page, per_page=results)

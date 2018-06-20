@@ -71,10 +71,7 @@ class TestAuth(unittest.TestCase):
             'email': 'tapiwa.lason@gmail.com',
             'password': 'SecretKey1to3'
         })  
-        self.client.post('/api/v1/auth/register', data=self.user_data)
-        
-
-        
+        self.client.post('/api/v1/auth/register', data=self.user_data)    
 
     def tearDown(self):
         """Runs after every test"""
@@ -122,7 +119,6 @@ class TestAuth(unittest.TestCase):
                 check = True
             self.assertTrue(check)
             
-
     def test_register_user(self):
         '''Test to register a user'''
         #register user

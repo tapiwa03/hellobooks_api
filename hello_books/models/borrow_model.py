@@ -21,7 +21,7 @@ class Borrow(db.Model):
     borrow_date = db.Column(db.String(11))
     due_date = db.Column(db.String(11))
     book_id = db.Column(db.String(20))
-    date_returned = db.Column(db.String(200))
+    date_returned = db.Column(db.String(11))
 
     def borrow_book(self, book_id, user_email, borrow_date, due_date, return_date):
         '''Function to borrow a book'''
@@ -59,8 +59,10 @@ class Borrow(db.Model):
             book.date_modified = datetime.datetime.now()
             db.session.add(data)
             db.session.commit()
+            borrow = Borrow().query.order_by(Borrow.id.desc()).first()
             return jsonify(
-                {'message': 'You have borrowed the book %s due on %s.' % (book.title, due_date)}), 201
+                {'message': 'You have borrowed the book %s due on %s. Borrow ID: #%s' 
+                    % (book.title, due_date, borrow.id)}), 201
 
     def return_book(self, borrow_id, user_email, return_date):
         '''function to return a book'''
@@ -71,11 +73,12 @@ class Borrow(db.Model):
         if borrow.date_returned is None:
             if borrow.user_email == user_email:
                 borrow.date_returned = return_date
+                book.copies = book.copies + 1
                 book.date_modified = datetime.datetime.now()
                 db.session.commit()
                 return jsonify({"message": "The book %s has been returned" % book.title}), 201
             return jsonify({"message": "You did not borrow this book"}), 401
-        return jsonify({"message": "This book has been returned"}), 401
+        return jsonify({"message": "This book has been returned already"}), 401
 
     def borrowing_history(self, user_email, page, per_page):
         '''Function to retrieve a users full borrowing history'''
@@ -124,3 +127,29 @@ class Borrow(db.Model):
         if len(borrowed) < 1:
             return jsonify({"message": "All books have been returned."}), 200
         return jsonify(borrow_list), 200
+
+    def books_currently_out(self, page, per_page):
+        '''Function to retrieve a list of all books that are currently borrowed'''
+        if Borrow().query.all() == 0:
+            return jsonify({"message": "No books have been borrowed yet."}), 204
+        currently_out_list = []
+        borrowed = Borrow().query.order_by(Borrow.id.asc()).paginate(
+            page,
+            per_page,
+            error_out=True)
+        for item in borrowed.items:
+            book = Books().query.filter_by(id=item.book_id).first()
+            user = User().query.filter_by(email=item.user_email).first()
+            borrowed_dict = {
+                "borrow_id": item.id,
+                "book_title": book.title,
+                "isbn": book.isbn,
+                "username": user.username,
+                "borrow_date": item.borrow_date,
+                "due_date": item.due_date,
+                "date_returned": item.date_returned,
+            }
+            if item.date_returned == None:
+                currently_out_list.append(borrowed_dict)
+        return jsonify(currently_out_list),200
+        
