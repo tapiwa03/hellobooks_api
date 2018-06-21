@@ -12,7 +12,7 @@ class TestAuth(unittest.TestCase):
 
 
     def setUp(self):
-        
+        '''Runs before'''
         # creates a test client
         self.app = create_app('testing')
         self.client = self.app.test_client()
@@ -76,6 +76,14 @@ class TestAuth(unittest.TestCase):
         '''Test if user can get book by id'''
         get = self.client.get(
             '/api/v1/books/1',
+            headers={
+                    'Authorization': 'Bearer {}'.format(self.admin_access_token)})
+        self.assertEqual(get.status_code, 200)
+
+    def test_books_currently_out(self):
+        '''Test if api will return all books currently loaned out'''
+        get = self.client.get(
+            'api/v1/users/books/all',
             headers={
                     'Authorization': 'Bearer {}'.format(self.admin_access_token)})
         self.assertEqual(get.status_code, 200)

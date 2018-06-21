@@ -1,25 +1,13 @@
 #test for adding, returning, borrowing and deleting a book
 """importing dependancies"""
 import unittest
-from flask import json, Flask
+from flask import json
 from api import create_app, db
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    get_jwt_identity, get_raw_jwt
-)
-from api.models.validate import HelloBooks
-from api.models.book import Books
-from api.models.user import User
-from api.models.borrow import Borrow
-import datetime
-
 
 app = create_app('testing')
-jwt = JWTManager(app)
 
 class TestAuth(unittest.TestCase):
     """Testing Borrow and return functions"""
-
 
     def setUp(self):
         """Runs before every test"""
@@ -136,7 +124,6 @@ class TestAuth(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(return_book.status_code, 404)
         
-
     def test_borrow_book(self):
         """test to borrow a book"""
         due_date = {"due_date": "07/07/2018"}
