@@ -18,8 +18,8 @@ auth = Blueprint('auth', __name__)
 @auth.route('/', methods=['Get'])
 def home():
     '''Home page'''
-    return jsonify({"message": "Home"})
-
+    return "<html><body><h1>Hello Books API</h1><br><a href='https://hellobooks8.docs.apiary.io/'>Click here for documentation.</a></body></html >"
+    
 @auth.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
     '''Function to reseta user password'''
