@@ -1,15 +1,14 @@
-from flask import jsonify, Blueprint, request, Flask, json
+from flask import jsonify, Blueprint, request, Flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity
 )
 import datetime
 from dateutil.relativedelta import relativedelta
-from hello_books import create_app, db
-from hello_books.models.validate_model import HelloBooks
-from hello_books.models.book_model import Books
-from hello_books.models.user_model import User
-
+from api import create_app, db
+from api.models.validate import HelloBooks
+from api.models.book import Books
+from api.models.user import User
 
 
 class Borrow(db.Model):

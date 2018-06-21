@@ -6,32 +6,26 @@ from flask_jwt_extended import (
     create_access_token, get_raw_jwt
 )
 from werkzeug.security import generate_password_hash, check_password_hash
-from hello_books import create_app
-from hello_books.models.validate_model import HelloBooks
-from hello_books.models.book_model import Books
-from hello_books.models.user_model import User
-from hello_books.models.blacklist_model import Blacklist
-
+from api import create_app
+from api.models.validate import HelloBooks
+from api.models.user import User
+from api.models.borrow import Borrow
+import string
+import random
 
 auth = Blueprint('auth', __name__)
 
 @auth.route('/', methods=['Get'])
 def home():
     '''Home page'''
-    return jsonify({"message": "Home page"})
+    return jsonify({"message": "Home"})
 
 @auth.route('/api/v1/auth/reset-password', methods=['POST'])
 def reset_password():
     '''Function to reseta user password'''
     email = request.json.get('email').strip()
-    if User().reset_password(email) == True:
-        return jsonify({
-            'message': "Password has been changed to Pass123. Please login and change it."
-        }), 201
-    return jsonify({
-        'message': "Email not found."
-    }), 404
-    
+    new_password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+    return User().reset_password(email, new_password)
 
 @auth.route('/api/v1/auth/register', methods=['POST'])
 def register():

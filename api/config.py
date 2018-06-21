@@ -1,4 +1,6 @@
 import datetime
+import os
+
 class BaseConfig:
     """Base configuration"""
     TESTING = False
@@ -6,6 +8,13 @@ class BaseConfig:
     SECRET_KEY = 'Random-Key_1to3'
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=45)
 
+    #Flask mail setup
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or None
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or None    
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT'))
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""

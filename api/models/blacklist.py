@@ -7,7 +7,7 @@ from flask_jwt_extended import (
 import datetime
 from functools import wraps
 from dateutil.relativedelta import relativedelta
-from hello_books import create_app, db
+from api import create_app, db
 
 class Blacklist(db.Model):
     """Set token to be revoked"""
@@ -23,7 +23,7 @@ class Blacklist(db.Model):
         add = Blacklist(token=head)
         db.session.add(add)
         db.session.commit()
-        return jsonify({"msg": "Logged out"})
+        return jsonify({"message": "Logged out"})
 
     @staticmethod
     def check_token(jti):

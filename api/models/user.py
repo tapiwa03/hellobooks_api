@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request, Flask, json, abort
+from flask import jsonify, request, Flask, json, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity,
@@ -6,10 +6,10 @@ from flask_jwt_extended import (
 )
 import datetime
 from dateutil.relativedelta import relativedelta
-from hello_books import create_app, db
-from hello_books.models.validate_model import HelloBooks
-from hello_books.models.blacklist_model import Blacklist
-
+from api import create_app, db, flask_mail
+from api.models.validate import HelloBooks
+from api.models.blacklist import Blacklist
+from flask_mail import Message
 
 class User(db.Model):
 
@@ -82,21 +82,21 @@ class User(db.Model):
                     return jsonify({'message': 'Incorrect Password.'}), 401
             else:
                 return jsonify(
-                    {"message": "Your account has been deactivated. Please contact a library admin."})
+                    {"message": "Your account has been deactivated. Please contact a library admin."}),403
         else:
             return jsonify(
                 {'message': 'Details match no record. Would you like to register?'})
 
-    def reset_password(self, mail):
+    def reset_password(self, mail, new_password):
         '''Reset user password'''
-        try:
-            user = User().query.filter_by(email=mail).first()
-            user.password = User().hash_password('Pass123')
-            user.date_modified = datetime.datetime.now()
-            db.session.commit()
-            return True
-        except:
-            return False
+        user = User().query.filter_by(email=mail).first()
+        user.password = User().hash_password(new_password)
+        user.date_modified = datetime.datetime.now()
+        db.session.commit()
+        msg = Message('Password Reset', sender = 'do-not-reply@gmail.com', recipients = [mail])
+        msg.body = "Hello %s,\nYour password has been reset to:\n %s." %(user.username, new_password)
+        flask_mail.send(msg)
+        return jsonify({"message": "New password sent to %s" % user.username}), 200
 
     def change_password(self, old_password, new_password, mail):
         '''Change user password'''

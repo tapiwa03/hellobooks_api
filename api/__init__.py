@@ -3,14 +3,14 @@ from flask_api import FlaskAPI
 from cerberus import Validator
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand, Manager
-import os
 from flask import jsonify, Flask
-from hello_books.config import app_config 
+from api.config import app_config 
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 
 
 db = SQLAlchemy()
-
+flask_mail = Mail()
 
 def create_app(config_name):
 
@@ -21,6 +21,7 @@ def create_app(config_name):
     app.url_map.strict_slashes = False
     app.config.from_object(app_config[config_name])
     db.init_app(app)
+    flask_mail.init_app(app)
 
     '''setup jwt for token encryption'''
     app.config['JWT_SECRET_KEY'] = 'Some-Key'
@@ -38,11 +39,11 @@ def create_app(config_name):
         jti = decrypted_token['jti']
         return jti in blacklist
 
-    '''import routes'''
-    from hello_books.api.auth_views import auth
-    from hello_books.api.book_views import books
+    #import routes
+    from api.views.auth import auth
+    from api.views.book import books
 
-    '''registering the routes to blueprints'''
+    #registering the routes to blueprints
     app.register_blueprint(auth)
     app.register_blueprint(books)
 

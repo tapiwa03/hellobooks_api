@@ -1,15 +1,15 @@
 '''import dependancies'''
 import datetime
 from flask import jsonify, Blueprint, request, make_response, session
-from hello_books import create_app
-from hello_books.models.borrow_model import Borrow
-from hello_books.models.book_model import Books
-from hello_books.models.validate_model import HelloBooks
+from api import create_app
+from api.models.validate import HelloBooks
+from api.models.book import Books
+from api.models.borrow import Borrow
+from api.models.blacklist import Blacklist
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
 )
-from hello_books.models.blacklist_model import Blacklist
 
 books = Blueprint('books', __name__)
 

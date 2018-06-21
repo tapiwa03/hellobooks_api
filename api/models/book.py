@@ -1,14 +1,13 @@
-from flask import jsonify, Blueprint, request, Flask, json
+from flask import jsonify, Blueprint, request, Flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity
 )
 import datetime
 from dateutil.relativedelta import relativedelta
-from hello_books import create_app, db
-from hello_books.models.validate_model import HelloBooks
-from hello_books.models.user_model import User
-from hello_books.models.blacklist_model import Blacklist
+from api import create_app, db
+from api.models.validate import HelloBooks
+from api.models.user import User
 
 
 class Books(db.Model):
@@ -104,7 +103,7 @@ class Books(db.Model):
                 date_created=date_created)
             self.save(new_book)
             return jsonify(
-                {"message": "%s by %s has been added to library" % (title, author)})
+                {"message": "%s by %s has been added to library" % (title, author)}),201
 
     def edit_book(self,title, book_id, author, date_published, genre, description, copies, isbn):
         '''Function for editing a book'''

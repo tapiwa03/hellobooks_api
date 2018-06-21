@@ -1,4 +1,4 @@
-from hello_books import create_app
+from api import create_app
 
 config_name = 'development'
 app = create_app(config_name)
