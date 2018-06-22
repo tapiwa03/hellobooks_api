@@ -20,6 +20,9 @@ class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:@localhost/hellobooks"
 
+class ProductionConfig(BaseConfig):
+    """Production configuration"""
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:@localhost/hellobooks_live"
 
 
 class TestingConfig(BaseConfig):
@@ -31,5 +34,6 @@ class TestingConfig(BaseConfig):
 
 app_config = {
     'development': DevelopmentConfig,
-    'testing': TestingConfig
+    'testing': TestingConfig,
+    'production': ProductionConfig
 }
