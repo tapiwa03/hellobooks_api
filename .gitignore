@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 bootcamp-c2/.pytest_cache/
 .pytest_cache/
-migrations/
 .env
 
 # C extensions

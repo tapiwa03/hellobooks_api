@@ -1,7 +1,7 @@
 from api import create_app
 import os
 
-config_name = 'production'
+config_name = 'development'
 app = create_app(config_name)
 
 if __name__ == '__main__':
