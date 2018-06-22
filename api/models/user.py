@@ -143,7 +143,6 @@ class User(db.Model):
         else:
             return jsonify({"message": "Email does not exist"}), 404
 
-
     def get_all_users(self, page, per_page):
         '''Function for retrieving all books'''
         if self.check_token() is False:
