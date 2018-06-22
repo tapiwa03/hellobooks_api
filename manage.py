@@ -1,4 +1,3 @@
-from flask.cli import FlaskGroup
 import unittest
 from api import create_app, db
 from api.models.validate import HelloBooks
