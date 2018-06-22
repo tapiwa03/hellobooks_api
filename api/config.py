@@ -18,7 +18,7 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:@localhost/hellobooks'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
