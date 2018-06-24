@@ -16,6 +16,7 @@ before_script:
  - psql -c 'create database testdb;' -U postgres
 script: 
   - coverage run --source=api manage.py test
+  - coverage report -m
 after_success:
  - coveralls
  - codeclimate-test-reporter

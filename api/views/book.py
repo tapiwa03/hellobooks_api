@@ -10,6 +10,7 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, get_raw_jwt
 )
+from api.views.auth import default_parameters
 
 books = Blueprint('books', __name__)
 
@@ -79,13 +80,11 @@ def add_book():
     else:
         return jsonify({"message": "Please enter correct book details"})
 
-
 @books.route('/api/v1/books/<int:id>', methods=['DELETE'])
 @jwt_required
 def delete_book(id):
     '''function to delete book'''
     return Books().delete(id)
-
 
 @books.route('/api/v1/books', methods=['GET'])
 @jwt_required
@@ -94,14 +93,12 @@ def get_all_books():
     parameters = default_parameters()
     return Books().get_all(page=parameters[0], per_page=parameters[1])
 
-
 @books.route('/api/v1/books/<int:id>', methods=['GET'])
 @jwt_required
 def get_by_book_id(id):
     '''function to get a single book by its id'''
     Books().check_if_book_exists(id)
     return Books().get_by_id(id)
-
 
 @books.route('/api/v1/users/books/<int:id>', methods=['POST'])
 @jwt_required
@@ -118,7 +115,6 @@ def borrow_book(id):
         return_date=None
     )
 
-
 @books.route('/api/v1/users/books/<int:id>', methods=['PUT'])
 @jwt_required
 def return_book(id):
@@ -130,7 +126,6 @@ def return_book(id):
         user_email=email,
         return_date=time
     )
-
 
 @books.route('/api/v1/users/books', methods=['GET'])
 @jwt_required
@@ -161,15 +156,3 @@ def books_currently_out():
 def logout():
     '''Function for logout'''
     return Blacklist().logout()
-
-def default_parameters():
-    '''Default pagination parameters'''
-    if 'page' in request.args:
-        page = int(request.args['page'])
-    else:
-        page = 1
-    if 'results' in request.args:
-        results_per_page = int(request.args['results'])
-    else:
-        results_per_page = 5
-    return [page, results_per_page]

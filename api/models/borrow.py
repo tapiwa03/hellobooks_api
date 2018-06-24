@@ -95,15 +95,7 @@ class Borrow(db.Model):
         for item in history.items:
             book = Books().query.filter_by(id=item.book_id).first()
             user = User().query.filter_by(email=user_email).first()
-            borrowed = {
-                "borrow_id": item.id,
-                "book_title": book.title,
-                "isbn": book.isbn,
-                "username": user.username,
-                "borrow_date": item.borrow_date,
-                "due_date": item.due_date,
-                "date_returned": item.date_returned,
-            }
+            borrowed = self.borrow_dictionary(item, book, user)
             borrow_list.append(borrowed)
         return jsonify(borrow_list), 200
 
@@ -115,15 +107,7 @@ class Borrow(db.Model):
         for item in history:
             book = Books().query.filter_by(id=item.book_id).first()
             user = User().query.filter_by(email=user_email).first()
-            borrowed = {
-                "borrow_id": item.id,
-                "book_title": book.title,
-                "isbn": book.isbn,
-                "username": user.username,
-                "borrow_date": item.borrow_date,
-                "due_date": item.due_date,
-                "date_returned": item.date_returned,
-            }
+            borrowed = self.borrow_dictionary(item, book, user)
             if item.date_returned is None:
                 borrow_list.append(borrowed)
         if len(borrow_list) < 1:
@@ -143,16 +127,19 @@ class Borrow(db.Model):
         for item in borrowed.items:
             book = Books().query.filter_by(id=item.book_id).first()
             user = User().query.filter_by(email=item.user_email).first()
-            borrowed_dict = {
-                "borrow_id": item.id,
-                "book_title": book.title,
-                "isbn": book.isbn,
-                "username": user.username,
-                "borrow_date": item.borrow_date,
-                "due_date": item.due_date,
-                "date_returned": item.date_returned,
-            }
+            borrowed_dict = self.borrow_dictionary(item, book, user)
             if item.date_returned is None:
                 currently_out_list.append(borrowed_dict)
         return jsonify(currently_out_list), 200
         
+    def borrow_dictionary(self, item, book, user):
+        '''Return the dictionary for borrowing details'''
+        return {
+            "borrow_id": item.id,
+            "book_title": book.title,
+            "isbn": book.isbn,
+            "username": user.username,
+            "borrow_date": item.borrow_date,
+            "due_date": item.due_date,
+            "date_returned": item.date_returned,
+        }

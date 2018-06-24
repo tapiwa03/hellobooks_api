@@ -46,16 +46,7 @@ class Books(db.Model):
         '''Function for retriving a book by its Id'''
         self.check_if_book_exists(book_id)
         item = Books().query.filter_by(id=book_id).first()
-        book = {
-            "id": item.id,
-            "title": item.title,
-            "author": item.author,
-            "date_published": item.date_published,
-            "genre": item.genre,
-            "description": item.description,
-            "copies": item.copies,
-            "isbn": item.isbn
-        }
+        book = self.book_item_dictionary(item)
         return jsonify(book), 200
 
     def get_all(self, page, per_page):
@@ -66,16 +57,7 @@ class Books(db.Model):
             error_out=True)
         books_list = []
         for item in books.items:
-            book = {
-                "id": item.id,
-                "title": item.title,
-                "author": item.author,
-                "date_published": item.date_published,
-                "genre": item.genre,
-                "description": item.description,
-                "copies": item.copies,
-                "isbn": item.isbn
-            }
+            book = self.book_item_dictionary(item)
             books_list.append(book)
         return jsonify(books_list), 200
 
@@ -133,3 +115,16 @@ class Books(db.Model):
         book.date_modified = datetime.datetime.now()
         db.session.commit()
         return jsonify({"message": "Successfully edited %s" % book.title}), 201
+
+    def book_item_dictionary(self, item):
+        '''Return a dictionary of book details'''
+        return {
+            "id": item.id,
+            "title": item.title,
+            "author": item.author,
+            "date_published": item.date_published,
+            "genre": item.genre,
+            "description": item.description,
+            "copies": item.copies,
+            "isbn": item.isbn
+        }
