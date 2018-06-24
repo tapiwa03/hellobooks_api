@@ -83,7 +83,7 @@ class TestAuth(unittest.TestCase):
     def test_books_currently_out(self):
         '''Test if api will return all books currently loaned out'''
         get = self.client.get(
-            'api/v1/users/books/all',
+            'api/v1/users/books/all?page=1&results=2',
             headers={
                     'Authorization': 'Bearer {}'.format(self.admin_access_token)})
         self.assertEqual(get.status_code, 200)

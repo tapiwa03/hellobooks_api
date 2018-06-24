@@ -1,5 +1,6 @@
-from cerberus import Validator
 import datetime
+from cerberus import Validator
+
 
 
 class HelloBooks(object):
@@ -80,7 +81,7 @@ class HelloBooks(object):
         return v.validate(dict_data)
 
     def edit_book_validation(self, dict_data):
-        '''book data validation function using CERBERUS'''
+        '''edit book data validation function using CERBERUS'''
         schema = {
             'title': {
                 'type': 'string',
@@ -127,6 +128,7 @@ class HelloBooks(object):
         return v.validate(dict_data)
 
     def date_validate(self, date_text):
+        '''Validate the date format'''
         try:
             datetime.datetime.strptime(date_text, '%d/%m/%Y')
             return True

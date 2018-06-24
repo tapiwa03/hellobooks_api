@@ -1,5 +1,4 @@
-from flask import jsonify, Blueprint, request, Flask, json
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import jsonify
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity,
     get_raw_jwt, jwt_required, get_jti

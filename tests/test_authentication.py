@@ -51,7 +51,7 @@ class TestAuth(unittest.TestCase):
             '/api/v1/auth/login',
             data=json.dumps({
                 'email': 'john@mail.com',
-                'password': 'John2018'     
+                'password': 'John2018'
             }),
             content_type='application/json')
         login_msg = json.loads(login.data)
@@ -84,20 +84,14 @@ class TestAuth(unittest.TestCase):
             '/api/v1/auth/login',
             data=self.wrong_user,
             content_type='application/json')
-        login_msg = json.loads(login.data)
-        if re.search("match no record", str(login_msg)):
-            check = True
-        self.assertTrue(check)
+        self.assertEqual(login.status_code, 404)
         #test with wrong password
         login = self.client.post('/api/v1/auth/login', data=json.dumps({
             'email': 'tapiwa.lason@gmail.com',
             'password': 'SecretKey787656'
             }),
             content_type='application/json')
-        login_msg = json.loads(login.data)
-        if re.search("Incorrect Password", str(login_msg)):
-            check = True
-        self.assertTrue(check)
+        self.assertEqual(login.status_code, 404)
         #test with no email
         login = self.client.post('/api/v1/auth/login', data=json.dumps({
             'password': 'Secr6hg56'
@@ -107,7 +101,7 @@ class TestAuth(unittest.TestCase):
         if re.search("input email", str(login_msg)):
             check = True
         self.assertTrue(check)
-        
+
     def test_register_user(self):
         '''Test to register a user'''
         #test with correct details
@@ -136,6 +130,12 @@ class TestAuth(unittest.TestCase):
         if re.search("Please input", str(register_msg)):
             check = True
         self.assertTrue(check)
+        #register with no data
+        register = self.client.post(
+            '/api/v1/auth/register',
+            data=json.dumps({}),
+            content_type='application/json')
+        self.assertEqual(register.status_code, 400)
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,7 +1,7 @@
 #test for admin creating another admin, authorize and deauthorize a user
 '''importing dependancies'''
 import unittest
-from flask import json, Flask
+from flask import json
 from api import create_app, db
 
 app = create_app('testing')
@@ -12,7 +12,7 @@ class TestAuth(unittest.TestCase):
 
 
     def setUp(self):
-        
+        '''Runs before every test'''
         # creates a test client
         self.app = create_app('testing')
         self.client = self.app.test_client()
@@ -72,7 +72,7 @@ class TestAuth(unittest.TestCase):
             '/api/v1/books',
             data=self.book_test,
             headers={
-                    'Authorization': 'Bearer {}'.format(self.admin_access_token)},
+                'Authorization': 'Bearer {}'.format(self.admin_access_token)},
             content_type='application/json')
         self.assertEqual(add.status_code, 201)
         #add book again
@@ -80,7 +80,7 @@ class TestAuth(unittest.TestCase):
             '/api/v1/books',
             data=self.book_test,
             headers={
-                    'Authorization': 'Bearer {}'.format(self.admin_access_token)},
+                'Authorization': 'Bearer {}'.format(self.admin_access_token)},
             content_type='application/json')
         self.assertEqual(add.status_code, 201)
 
@@ -90,14 +90,14 @@ class TestAuth(unittest.TestCase):
             '/api/v1/books',
             data=self.book_test,
             headers={
-                    'Authorization': 'Bearer {}'.format(self.admin_access_token)},
+                'Authorization': 'Bearer {}'.format(self.admin_access_token)},
             content_type='application/json')
         self.assertEqual(add.status_code, 201)
         #delete book
         delete = self.client.delete(
             '/api/v1/books/1',
             headers={
-                    'Authorization': 'Bearer {}'.format(self.admin_access_token)})
+                'Authorization': 'Bearer {}'.format(self.admin_access_token)})
         self.assertEqual(delete.status_code, 200)
 
 if __name__ == "__main__":

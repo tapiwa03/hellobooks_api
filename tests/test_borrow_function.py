@@ -7,7 +7,7 @@ from api import create_app, db
 app = create_app('testing')
 
 class TestAuth(unittest.TestCase):
-    """Testing Borrow and return functions"""
+    """Testing Borrow functions"""
 
     def setUp(self):
         """Runs before every test"""
@@ -80,49 +80,6 @@ class TestAuth(unittest.TestCase):
                     'Authorization': 'Bearer {}'.format(self.admin_access_token)},
             content_type='application/json')
         self.assertEqual(result.status_code, 201)
-
-    def borrow_book(self):
-        '''Borrow a book'''
-        due_date = {"due_date": "07/07/2018"}
-        borrow = self.client.post(
-            '/api/v1/users/books/1',
-            data=json.dumps(due_date),
-            headers={
-                'Authorization': 'Bearer {}'.format(self.access_token)},
-            content_type='application/json')
-        self.assertEqual(borrow.status_code, 201)    
-
-    def test_return_book(self):
-        """test to return a borrowed book"""
-        self.borrow_book()
-        #test with wrong user
-        return_book = self.client.put(
-            '/api/v1/users/books/1',
-            headers={
-                'Authorization': 'Bearer {}'.format(self.admin_access_token)},
-            content_type='application/json')
-        self.assertEqual(return_book.status_code, 401)
-        #test with correct user
-        return_book = self.client.put(
-            '/api/v1/users/books/1',
-            headers={
-                'Authorization': 'Bearer {}'.format(self.access_token)},
-            content_type='application/json')
-        self.assertEqual(return_book.status_code, 201)
-        #return the same book again
-        return_book = self.client.put(
-            '/api/v1/users/books/1',
-            headers={
-                'Authorization': 'Bearer {}'.format(self.access_token)},
-            content_type='application/json')
-        self.assertEqual(return_book.status_code, 401)
-        #test with nonexistent book
-        return_book = self.client.put(
-            '/api/v1/users/books/1234',
-            headers={
-                'Authorization': 'Bearer {}'.format(self.access_token)},
-            content_type='application/json')
-        self.assertEqual(return_book.status_code, 404)
         
     def test_borrow_book(self):
         """test to borrow a book"""
@@ -151,6 +108,15 @@ class TestAuth(unittest.TestCase):
                 'Authorization': 'Bearer {}'.format(self.access_token)},
             content_type='application/json')
         self.assertEqual(borrow.status_code, 404)
+        #test with wrongly formated date
+        due_date = {"due_date": "07/07/20+_)()"}
+        borrow = self.client.post(
+            '/api/v1/users/books/1',
+            data=json.dumps(due_date),
+            headers={
+                'Authorization': 'Bearer {}'.format(self.access_token)},
+            content_type='application/json')
+        self.assertEqual(borrow.status_code, 401)
 
 if __name__ == "__main__":
     unittest.main()

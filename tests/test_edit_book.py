@@ -43,7 +43,7 @@ class TestAuth(unittest.TestCase):
             "author": "Tolstoy",
             "date_published": "02/12/2009",
             "genre": "anime",
-            "description": "No more description",
+            #"description": "No more description",
             "isbn": "1112223334445",
             "copies": "8"
         })
@@ -59,7 +59,7 @@ class TestAuth(unittest.TestCase):
         self.client.post('/api/v1/auth/register', data=self.admin)
         self.admin_access_token = self.login_admin()
         self.add_book()
-        
+
     def tearDown(self):
         '''Runs after every test in this file'''
         with self.app.app_context():
@@ -89,13 +89,41 @@ class TestAuth(unittest.TestCase):
         
     def test_edit_book(self):
         '''Test whether user can edit book'''
-        edit = self.client.post(
-            '/api/v1/books',
+        edit = self.client.put(
+            '/api/v1/books/1',
             data=self.edit_test,
             headers={
                     'Authorization': 'Bearer {}'.format(self.admin_access_token)},
             content_type='application/json')
+        self.assertEqual(edit.status_code ,200)
+        #test editing date
+        edit = self.client.put(
+            '/api/v1/books/1',
+            data=json.dumps({
+                "date_published": "02/12/2009"
+            }),
+            headers={
+                    'Authorization': 'Bearer {}'.format(self.admin_access_token)},
+            content_type='application/json')
         self.assertEqual(edit.status_code ,201)
+        #test edit with incorrect date format
+        edit = self.client.put(
+            '/api/v1/books/1',
+            data=json.dumps({
+                "date_published": "02/12/[]-0"
+            }),
+            headers={
+                    'Authorization': 'Bearer {}'.format(self.admin_access_token)},
+            content_type='application/json')
+        self.assertEqual(edit.status_code ,400)
+        #test edit with no data
+        edit = self.client.put(
+            '/api/v1/books/1',
+            data=json.dumps({}),
+            headers={
+                    'Authorization': 'Bearer {}'.format(self.admin_access_token)},
+            content_type='application/json')
+        self.assertEqual(edit.status_code ,400)
 
 if __name__ == "__main__":
     unittest.main()

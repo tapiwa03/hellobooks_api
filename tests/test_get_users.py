@@ -73,7 +73,7 @@ class TestAuth(unittest.TestCase):
         '''Test if admin can get all users'''
         token = self.login_admin()
         get_all = self.client.get(
-            '/api/v1/auth/users',
+            '/api/v1/auth/users?page=1&results=2',
             headers={
                     'Authorization': 'Bearer {}'.format(token)})
         self.assertEqual(get_all.status_code, 200)
@@ -81,6 +81,17 @@ class TestAuth(unittest.TestCase):
     def test_authorize_user(self):
         '''Test if admin can authorize a user'''
         token = self.login_admin()
+        auth = self.client.put(
+            '/api/v1/auth/authorize',
+            data=json.dumps({
+                "email_of_user": "john@mail.com",
+                "password": "SecretKey1to3"
+            }),
+            headers={
+                'Authorization': 'Bearer {}'.format(token)},
+            content_type='application/json')
+        self.assertEqual(auth.status_code, 201)
+        #test deauthorize user
         auth = self.client.put(
             '/api/v1/auth/authorize',
             data=json.dumps({

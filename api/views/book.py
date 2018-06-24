@@ -17,57 +17,36 @@ books = Blueprint('books', __name__)
 @jwt_required
 def check_token():
     jti = get_raw_jwt()['jti']
-    if Blacklist().check_token(jti) == False:
+    if Blacklist().check_token(jti) is False:
             return jsonify({"message":"You are not logged in."}), 403
 
 @books.route('/api/v1/books/<int:id>', methods=['PUT'])
 @jwt_required
 def edit_book(id):
     '''Function for editing book info'''
-    if len(request.json) == 0:
-        return jsonify({'message': "No data entered"})        
-    if 'title' in request.json:
-        title = request.json['title']
-    else:
-        title = None
-    
-    if 'author' in request.json:
-        author = request.json['author']
-    else:
-        author = None
-    
-    if 'date_published' in request.json:
-        date_published = request.json['date_published']
-    else:
-        date_published = None
-
-    if 'genre' in request.json:
-        genre = request.json['genre']
-    else:
-        genre = None
-    
-    if 'description' in request.json:
-        description = request.json['description']
-    else:
-        description = None
-
-    if 'isbn' in request.json:
-        isbn = request.json['isbn']
-    else:
-        isbn = None
-
-    if 'copies' in request.json:
-        copies = request.json['copies']
-    else:
-        copies = None
+    if len(request.json) is 0:
+        return jsonify({'message': "No data entered"}), 400
+    fields = {
+        'title': None,
+        'author': None,
+        'date_published': None,
+        'genre': None,
+        'description': None,
+        'isbn': None,
+        'copies': None}
+    for key in fields:
+        if '%s' % key in request.json:
+            fields[key] = request.json['%s' % key]
+        else:
+            key = None
     return Books().edit_book(
-        title=title,
-        author=author,
-        date_published=date_published,
-        genre=genre,
-        description=description,
-        isbn=isbn,
-        copies=copies,
+        title=fields['title'],
+        author=fields['author'],
+        date_published=fields['date_published'],
+        genre=fields['genre'],
+        description=fields['description'],
+        isbn=fields['isbn'],
+        copies=fields['copies'],
         book_id=id
     )
     
@@ -86,7 +65,7 @@ def add_book():
         'copies': sent_data.get('copies')
     }
     data = {k : v.strip() for k, v in raw_data.items()}
-    if HelloBooks().add_book_validation(data) == True:
+    if HelloBooks().add_book_validation(data) is True:
         return Books().add_book(
             title=data['title'],
             author=data['author'],
@@ -112,25 +91,16 @@ def delete_book(id):
 @jwt_required
 def get_all_books():
     '''function to get all books'''
-    if 'page' in request.args:
-        page = int(request.args['page'])
-    else:
-        page = 1
-    if 'results' in request.args:
-        results = int(request.args['results'])
-    else:
-        results = 10
-    return Books().get_all(page=page, per_page=results)
+    parameters = default_parameters()
+    return Books().get_all(page=parameters[0], per_page=parameters[1])
 
 
 @books.route('/api/v1/books/<int:id>', methods=['GET'])
 @jwt_required
 def get_by_book_id(id):
     '''function to get a single book by its id'''
-    if Books().get_by_id(id) == False:
-        return jsonify({"message": "Book does not exist"}), 404
-    else:
-        return Books().get_by_id(id)
+    Books().check_if_book_exists(id)
+    return Books().get_by_id(id)
 
 
 @books.route('/api/v1/users/books/<int:id>', methods=['POST'])
@@ -171,34 +141,19 @@ def get_borrowing_history():
     if 'returned' in request.args:
         if request.args['returned'] == 'false':
             return Borrow().books_not_returned(user_email=email)
-    #desired page number
-    if 'page' in request.args:
-        page = int(request.args['page'])
-    else:
-        page = 1
-    #desired results per page
-    if 'results' in request.args:
-        results = int(request.args['results'])
-    else:
-        results = 5
-    return Borrow().borrowing_history(user_email=email, page=page, per_page=results)
+    parameters = default_parameters()
+    return Borrow().borrowing_history(
+        user_email=email,
+        page=parameters[0],
+        per_page=parameters[1])
         
 @books.route('/api/v1/users/books/all', methods=['GET'])
 @jwt_required
 def books_currently_out():
     '''function to get a users full borrowing history'''
-    #entry format /api/v1/users/books?page=3&results=8
-    #desired page number
-    if 'page' in request.args:
-        page = int(request.args['page'])
-    else:
-        page = 1
-    #desired results per page
-    if 'results' in request.args:
-        results = int(request.args['results'])
-    else:
-        results = 5
-    return Borrow().books_currently_out(page=page, per_page=results)
+    #entry format /api/v1/users/books/all?page=1&results=2
+    parameters = default_parameters()
+    return Borrow().books_currently_out(page=parameters[0], per_page=parameters[1])
 
    
 @books.route('/api/v1/auth/logout', methods=['POST'])
@@ -206,3 +161,15 @@ def books_currently_out():
 def logout():
     '''Function for logout'''
     return Blacklist().logout()
+
+def default_parameters():
+    '''Default pagination parameters'''
+    if 'page' in request.args:
+        page = int(request.args['page'])
+    else:
+        page = 1
+    if 'results' in request.args:
+        results_per_page = int(request.args['results'])
+    else:
+        results_per_page = 5
+    return [page, results_per_page]

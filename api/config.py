@@ -24,13 +24,11 @@ class ProductionConfig(BaseConfig):
     """Production configuration"""
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
-
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:@localhost/testdb"
     PRESERVE_CONTEXT_ON_EXCEPTION = False
-
 
 app_config = {
     'development': DevelopmentConfig,
