@@ -4,10 +4,9 @@ from cerberus import Validator
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand, Manager
 from flask import jsonify, Flask, make_response
-from api.config import app_config 
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
-
+from api.config import app_config
 
 db = SQLAlchemy()
 flask_mail = Mail()
@@ -42,8 +41,4 @@ def create_app(config_name):
     app.register_blueprint(books)
     # shell context for flask cli
     app.shell_context_processor({'app': app, 'db': db})
-
-    
     return app
-
-

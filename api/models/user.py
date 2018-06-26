@@ -1,11 +1,10 @@
 '''Import dependancies'''
-import re
 import datetime
 from flask import jsonify, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity,
-    get_jti, get_raw_jwt, JWTManager, jwt_required,
+    get_raw_jwt, jwt_required,
 )
 from flask_mail import Message
 from api import db, flask_mail
@@ -90,11 +89,12 @@ class User(db.Model):
 
     def reset_password(self, mail, new_password):
         '''Reset user password'''
+        self.check_email_exists(mail)
         user = User().query.filter_by(email=mail).first()
         user.password = User().hash_password(new_password)
         user.date_modified = datetime.datetime.now()
         db.session.commit()
-        msg = Message('Password Reset', sender='do-not-reply@gmail.com', recipients = [mail])
+        msg = Message('Password Reset', sender='tapiwa.lason@gmail.com', recipients=[mail])
         msg.body = "Hello %s,\nYour password has been reset to:\n%s." %(user.username, new_password)
         flask_mail.send(msg)
         return jsonify({"message": "New password sent to %s" % user.username}), 200
@@ -158,3 +158,4 @@ class User(db.Model):
             }
             user_list.append(book)
         return jsonify(user_list), 200
+        

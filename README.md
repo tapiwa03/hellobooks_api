@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/3V0L/hellobooks_api.svg?branch=master)](https://travis-ci.org/3V0L/hellobooks_api) [![Coverage Status](https://coveralls.io/repos/github/3V0L/bootcamp-c2/badge.svg?branch=ft-real-data-api-156137706)](https://coveralls.io/github/3V0L/bootcamp-c2?branch=ft-real-data-api-156137706) [![Maintainability](https://api.codeclimate.com/v1/badges/1c662ee03a51b905706d/maintainability)](https://codeclimate.com/github/3V0L/hellobooks_api/maintainability)
+[![Build Status](https://travis-ci.org/3V0L/hellobooks_api.svg?branch=ft-real-data-api-156137706)](https://travis-ci.org/3V0L/hellobooks_api)  [![Coverage Status](https://coveralls.io/repos/github/3V0L/hellobooks_api/badge.svg?branch=ft-real-data-api-156137706)](https://coveralls.io/github/3V0L/hellobooks_api?branch=ft-real-data-api-156137706)  [![Maintainability](https://api.codeclimate.com/v1/badges/1c662ee03a51b905706d/maintainability)](https://codeclimate.com/github/3V0L/hellobooks_api/maintainability)
 
 # Hellobooks 
 
@@ -11,7 +11,8 @@ There is a time limit imposed on the weeks a user can borrow a book for, the tim
 Any suggestions for improvements are greatly appreciated. 
 
 ## Hosted
-The app is hosted on [apiary]()
+The documentation is hosted on [apiary](https://hellobooks8.docs.apiary.io/)
+The API itself is available on [heroku](https://hellobooks-tapiwa.herokuapp.com/)
 
 ## API Functionality
 
@@ -57,7 +58,7 @@ The app is hosted on [apiary]()
  ```
  - cd into directory
  ```
- $ cd book-a-meal
+ $ cd hellobooks_api
  ```
  - Install the apps dependencies by running 
  ```

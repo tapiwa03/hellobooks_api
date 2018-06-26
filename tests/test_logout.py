@@ -1,4 +1,3 @@
-#test for adding, returning, borrowing and deleting a book
 """importing dependancies"""
 import re
 import unittest
@@ -56,7 +55,6 @@ class TestAuth(unittest.TestCase):
             content_type='application/json')
         login_msg = json.loads(login.data)
         self.access_token = login_msg['access_token']
-
 
     def test_logout(self):
         '''Test to logout user'''

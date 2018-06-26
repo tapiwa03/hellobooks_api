@@ -1,13 +1,8 @@
-from flask.cli import FlaskGroup
+'''Script to run tests and create migrations'''
 import unittest
-from api import create_app, db
-from api.models.validate import HelloBooks
-from api.models.book import Books
-from api.models.user import User
-from api.models.borrow import Borrow
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
-
+from api import create_app, db
 
 app = create_app(config_name='development')
 

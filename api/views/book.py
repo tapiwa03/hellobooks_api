@@ -1,15 +1,14 @@
 '''import dependancies'''
 import datetime
-from flask import jsonify, Blueprint, request, make_response, session
-from api import create_app
+from flask import jsonify, Blueprint, request
+from flask_jwt_extended import (
+    jwt_required, get_jwt_identity,
+    get_raw_jwt
+)
 from api.models.validate import HelloBooks
 from api.models.book import Books
 from api.models.borrow import Borrow
 from api.models.blacklist import Blacklist
-from flask_jwt_extended import (
-    JWTManager, jwt_required, get_jwt_identity,
-    create_access_token, get_raw_jwt
-)
 from api.views.auth import default_parameters
 
 books = Blueprint('books', __name__)
@@ -17,9 +16,10 @@ books = Blueprint('books', __name__)
 @books.before_request
 @jwt_required
 def check_token():
+    '''Check if token is valid'''
     jti = get_raw_jwt()['jti']
     if Blacklist().check_token(jti) is False:
-            return jsonify({"message":"You are not logged in."}), 403
+        return jsonify({"message":"You are not logged in."}), 403
 
 @books.route('/api/v1/books/<int:id>', methods=['PUT'])
 @jwt_required
@@ -50,7 +50,7 @@ def edit_book(id):
         copies=fields['copies'],
         book_id=id
     )
-    
+
 @books.route('/api/v1/books', methods=['POST'])
 @jwt_required
 def add_book():
@@ -141,7 +141,7 @@ def get_borrowing_history():
         user_email=email,
         page=parameters[0],
         per_page=parameters[1])
-        
+
 @books.route('/api/v1/users/books/all', methods=['GET'])
 @jwt_required
 def books_currently_out():
@@ -150,7 +150,6 @@ def books_currently_out():
     parameters = default_parameters()
     return Borrow().books_currently_out(page=parameters[0], per_page=parameters[1])
 
-   
 @books.route('/api/v1/auth/logout', methods=['POST'])
 @jwt_required
 def logout():
