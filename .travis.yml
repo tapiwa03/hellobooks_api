@@ -4,19 +4,18 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install Flask-API
-  - pip install flask-jwt-extended
-  - pip install cerberus
-  - pip install coveralls
   - pip install codeclimate-test-reporter
-  - pip install pytest pytest-cov
   - pip install gunicorn
-# command to run tests
+
+before_script:
+ - psql -c 'create database testdb;' -U postgres
 script: 
-  - pytest --cov=./ 
+  - coverage run --source=api manage.py test
+  - coverage report -m
 after_success:
  - coveralls
  - codeclimate-test-reporter
+
 
   
   
