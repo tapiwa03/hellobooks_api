@@ -80,7 +80,7 @@ class User(db.Model):
         if user.authorized is True:
             if check_password_hash(user.password, password) is True:
                 access_token = create_access_token(identity=mail)
-                return jsonify(access_token=access_token), 200
+                return jsonify(access_token=access_token, user=user.username, admin=user.is_admin), 200
             else:
                 return jsonify({'message': 'Incorrect Password.'}), 401
         else:
