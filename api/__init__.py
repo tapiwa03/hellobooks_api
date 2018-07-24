@@ -7,6 +7,7 @@ from flask import jsonify, Flask, make_response
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from api.config import app_config
+from flask_cors import CORS
 
 db = SQLAlchemy()
 flask_mail = Mail()
@@ -15,7 +16,7 @@ def create_app(config_name):
 
     '''instantiate the app'''
     app = FlaskAPI(__name__)
-
+    CORS(app)
     # set config
     app.url_map.strict_slashes = False
     app.config.from_object(app_config[config_name])
