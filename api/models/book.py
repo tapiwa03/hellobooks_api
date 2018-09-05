@@ -25,6 +25,7 @@ class Books(db.Model):
         User().check_user_is_admin()
         db.session.add(data)
         db.session.commit()
+        return jsonify({"message": "Successfully created."}), 201
     
     @staticmethod
     def check_if_book_exists(book_id):
@@ -65,10 +66,7 @@ class Books(db.Model):
         '''Function for adding a user'''
         User().check_user_is_admin()
         if Books().query.filter_by(isbn=isbn).count() != 0:
-            existing_book = Books().query.filter_by(isbn=isbn).first()
-            existing_book.copies += 1
-            db.session.commit()
-            return jsonify({'message': 'Book exists, copies incremented by 1.'}), 201
+            return jsonify({'message': 'Book exists, please got edit it..'}), 409
         else:
             new_book = Books(
                 title=title,
@@ -88,6 +86,9 @@ class Books(db.Model):
         User().check_user_is_admin()
         self.check_if_book_exists(book_id)
         book = Books().query.filter_by(id=book_id).first()
+        if book.isbn != isbn:
+            if Books().query.filter_by(isbn=isbn).count() is not 0:
+                return jsonify({"message": "Cannot create a duplicate ISBN"}), 200
         fields = {
             'title': title,
             'id': book_id,
@@ -104,7 +105,7 @@ class Books(db.Model):
                     setattr(book, key, fields[key])
                 else:
                     return jsonify(
-                        {'message': 'Please enter fields correctly.'})
+                        {'message': 'Please enter %s correctly.' % key}), 200
         #edit the date
         if date_published is not None:
             if HelloBooks().date_validate(date_published) is True:

@@ -22,7 +22,7 @@ class Blacklist(db.Model):
         add = Blacklist(token=head)
         db.session.add(add)
         db.session.commit()
-        return jsonify({"message": "Logged out"})
+        return jsonify({"message": "Logged out"}), 200
 
     @staticmethod
     def check_token(jti):

@@ -13,14 +13,6 @@ from api.views.auth import default_parameters
 
 books = Blueprint('books', __name__)
 
-@books.before_request
-@jwt_required
-def check_token():
-    '''Check if token is valid'''
-    jti = get_raw_jwt()['jti']
-    if Blacklist().check_token(jti) is False:
-        return jsonify({"message":"You are not logged in."}), 403
-
 @books.route('/api/v1/books/<int:id>', methods=['PUT'])
 @jwt_required
 def edit_book(id):
@@ -149,9 +141,3 @@ def books_currently_out():
     #entry format /api/v1/users/books/all?page=1&results=2
     parameters = default_parameters()
     return Borrow().books_currently_out(page=parameters[0], per_page=parameters[1])
-
-@books.route('/api/v1/auth/logout', methods=['POST'])
-@jwt_required
-def logout():
-    '''Function for logout'''
-    return Blacklist().logout()
