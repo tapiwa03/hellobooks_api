@@ -82,7 +82,7 @@ class TestAuth(unittest.TestCase):
             headers={
                 'Authorization': 'Bearer {}'.format(self.admin_access_token)},
             content_type='application/json')
-        self.assertEqual(add.status_code, 201)
+        self.assertEqual(add.status_code, 409)
 
     def test_delete_book(self):
         '''Test whether admin can delete a book'''

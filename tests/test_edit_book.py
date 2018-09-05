@@ -95,7 +95,7 @@ class TestAuth(unittest.TestCase):
             headers={
                     'Authorization': 'Bearer {}'.format(self.admin_access_token)},
             content_type='application/json')
-        self.assertEqual(edit.status_code ,200)
+        self.assertEqual(edit.status_code ,201)
         #test editing date
         edit = self.client.put(
             '/api/v1/books/1',
