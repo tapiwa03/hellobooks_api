@@ -10,6 +10,7 @@ from api import create_app
 from api.models.validate import HelloBooks
 from api.models.user import User
 from api.models.borrow import Borrow
+from api.models.blacklist import Blacklist
 import string
 import random
 
@@ -44,11 +45,9 @@ def register():
         email = data['email']
         password = User().hash_password(data['password'])
         date_created = datetime.datetime.now()
-        User().save(username, email, password, date_created)
-        return jsonify({'message': 'Registered Successfully.'}), 201
+        return User().save(username, email, password, date_created)
     else:
-        return jsonify(
-            {'message': 'Please enter all the data in the correct format.'})
+        return jsonify({'message': 'Please enter data that is correctly formatted.'}), 400
 
 @auth.route('/api/v1/auth/login', methods=['POST'])
 def login():
@@ -113,3 +112,18 @@ def default_parameters():
     else:
         results_per_page = 5
     return [page, results_per_page]
+
+@auth.route('/api/v1/auth/login_check', methods=['GET'])
+@jwt_required
+def check_if_logged_in():
+    '''function to get all books'''
+    jti = get_raw_jwt()['jti']
+    if Blacklist().check_token(jti) is False:
+        return jsonify({"message":"You are not logged in."}), 403
+    return jsonify({"message": "You are already logged in."}), 200
+
+@auth.route('/api/v1/auth/logout', methods=['POST'])
+@jwt_required
+def logout():
+    '''Function for logout'''
+    return Blacklist().logout()

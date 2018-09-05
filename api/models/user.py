@@ -28,25 +28,27 @@ class User(db.Model):
     def save(self, username, email, password, date_created):
         '''Insert data into users table'''
         if User().query.filter_by(email=email).count() > 0:
-            return jsonify({'message': 'Email Exists'})
-        if "@yandex" not in email:
+            return jsonify({'message': 'Email Already Exists'})
+        if "@yandex" in email:
             user = User(
                 username=username,
                 email=email,
                 password=password,
                 date_created=date_created,
-                is_admin=False)
+                is_admin=True)
             db.session.add(user)
             db.session.commit()
+            return jsonify({'message': 'Admin Registered Successfully.'}), 201
         else:
             admin = User(
                 username=username,
                 email=email,
                 password=password,
                 date_created=date_created,
-                is_admin=True)
+                is_admin=False)
             db.session.add(admin)
             db.session.commit()
+            return jsonify({'message': 'User Registered Successfully.'}), 201
 
     @jwt_required
     def check_token(self):

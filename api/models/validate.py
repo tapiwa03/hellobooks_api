@@ -81,7 +81,7 @@ class HelloBooks(object):
         return v.validate(dict_data)
 
     def edit_book_validation(self, dict_data):
-        '''edit book data validation function using CERBERUS'''
+        '''edit book data validation function'''
         schema = {
             'title': {
                 'type': 'string',
@@ -109,8 +109,8 @@ class HelloBooks(object):
                 'required': False,
                 'regex': '^[0-9]+$',
                 'empty': False,
-                'maxlength': 1,
-                'minlength': 3},
+                'maxlength': 3,
+                'minlength': 1},
             'isbn': {
                 'type': 'string',
                 'required': False,

@@ -44,7 +44,7 @@ class Borrow(db.Model):
         '''End of date formating'''
         if book.copies < 1:
             return jsonify(
-                {"message": 'All copies of %s have been borrowed.' % book.title})
+                {"message": 'All copies of %s have been borrowed.' % book.title}), 404
         if books_not_returned > 4:
             return jsonify(
                 {"message": 'you have borrowed 5 books. Please return 1 to be able to borrow another'}), 401

@@ -68,12 +68,7 @@ class TestAuth(unittest.TestCase):
         if re.search("Logged out", str(logout_msg)):
             check = True
         self.assertTrue(check)
-        #test if user can access an endpoint after logout
-        get = self.client.get(
-            '/api/v1/books',
-            headers={
-                    'Authorization': 'Bearer {}'.format(self.access_token)})
-        self.assertEqual(get.status_code, 403)
+
      
 if __name__ == "__main__":
     unittest.main()
