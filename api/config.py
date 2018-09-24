@@ -12,10 +12,12 @@ class BaseConfig:
     #Flask mail setup
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or None
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or None
+    #test
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = 465
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
+    #another comment
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
