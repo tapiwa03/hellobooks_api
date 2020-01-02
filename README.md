@@ -98,17 +98,3 @@ The API itself is available on [heroku](https://hellobooks-tapiwa.herokuapp.com/
     'password': 'John2018'
 }
 ```
-## Credit
-*My family*
-
-*The People at Andela*
-
-
-
-
-
-
-
-
-
-### Made by 3V0L
